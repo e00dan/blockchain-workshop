@@ -1,22 +1,11 @@
 pragma solidity 0.5.16;
 
 contract HeadTail {
-    uint public counter;
+    address public depositingUserAddress;
 
-    constructor() public {
-        counter = 1;
-    }
-
-    function setCounter(uint _counter) public {
-        counter = _counter;
-    }
-
-    function counterMultiplied(uint _multiplier) public view
-    returns (uint _counterMultiplied) {
-        _counterMultiplied = counter * _multiplier;
-    }
-
-    function counterMultipliedSquare(uint _multiplier) public view returns (uint) {
-        return counterMultiplied(_multiplier) * _multiplier;
+    function deposit() public payable {
+        if (msg.value >= 1 ether) {
+            depositingUserAddress = msg.sender;
+        }
     }
 }

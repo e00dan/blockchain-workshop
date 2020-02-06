@@ -27,9 +27,11 @@ export async function deployHeadTailContract(web3: Web3, defaultSender: string):
 
     const headTail = await deployHeadTailContract(web3, accounts[0]);
 
-    await headTail.methods.setCounter(2).send();
+    const oneEther = 1 * 10 ** 18;
 
-    console.log(await headTail.methods.counter().call());
-    console.log(await headTail.methods.counterMultiplied(2).call()); // 4
-    console.log(await headTail.methods.counterMultipliedSquare(2).call()); // 8
+    await headTail.methods.deposit().send({
+        value: oneEther
+    });
+
+    console.log(await headTail.methods.depositingUserAddress().call());
 })();
