@@ -25,13 +25,25 @@ export async function deployHeadTailContract(web3: Web3, defaultSender: string):
 
     const accounts = await web3.eth.getAccounts();
 
-    const headTail = await deployHeadTailContract(web3, accounts[0]);
+    const userOne = accounts[0];
+    const userTwo = accounts[1];
+
+    const headTail = await deployHeadTailContract(web3, userOne);
 
     const oneEther = 1 * 10 ** 18;
 
-    await headTail.methods.deposit().send({
-        value: oneEther
+    await headTail.methods.depositUserOne().send({
+        value: oneEther,
+        from: userOne
     });
 
-    console.log(await headTail.methods.depositingUserAddress().call());
+    await headTail.methods.depositUserTwo().send({
+        value: oneEther,
+        from: userTwo
+    });
+
+    console.log({
+        userOne: await headTail.methods.userOneAddress().call(),
+        userTwo: await headTail.methods.userTwoAddress().call()
+    });
 })();

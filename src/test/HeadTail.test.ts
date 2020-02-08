@@ -6,6 +6,8 @@ import { HeadTail } from '../types/HeadTail';
 import { deployHeadTailContract } from '../HeadTail';
 import { CONFIG } from '../config';
 
+const EMPTY_ADDRESS = '0x0000000000000000000000000000000000000000';
+
 describe('HeadTail', () => {
     let web3: Web3;
     let accounts: string[];
@@ -28,12 +30,12 @@ describe('HeadTail', () => {
 
             const oneEther = BigInt(1 * 10 ** 18);
 
-            await contract.methods.deposit().send({
+            await contract.methods.depositUserOne().send({
                 value: oneEther.toString()
             });
 
-            expect(BigInt(await web3.eth.getBalance(account))).to.be.equal(
-                startingBalance - oneEther
+            expect(await web3.eth.getBalance(account)).to.be.equal(
+                (startingBalance - oneEther).toString()
             );
         });
 
@@ -42,25 +44,48 @@ describe('HeadTail', () => {
 
             const oneEther = BigInt(1 * 10 ** 18);
 
-            await contract.methods.deposit().send({
+            await contract.methods.depositUserOne().send({
                 value: oneEther.toString()
             });
 
-            expect(await contract.methods.depositingUserAddress().call()).to.be.equal(account);
+            expect(await contract.methods.userOneAddress().call()).to.be.equal(account);
         });
 
         it('does not save address of user if deposited value is below 1 ether', async () => {
             const oneEther = BigInt(1 * 10 ** 18);
 
-            await contract.methods.deposit().send({
+            await contract.methods.depositUserOne().send({
                 value: (oneEther - BigInt(1)).toString()
             });
 
-            expect(await contract.methods.depositingUserAddress().call()).to.be.equal(null);
+            expect(await contract.methods.userOneAddress().call()).to.be.equal(EMPTY_ADDRESS);
         });
 
         // it('reverts when trying to deposit less than 1 ether and sends it back to sender', async () => {
 
         // });
+    });
+
+    describe('Stage 2', () => {
+        it('allows to save both users addresses', async () => {
+            const userOne = accounts[0];
+            const userTwo = accounts[1];
+
+            const oneEther = BigInt(1 * 10 ** 18);
+
+            await contract.methods.depositUserOne().send({
+                value: oneEther.toString(),
+                from: userOne
+            });
+
+            expect(await contract.methods.userOneAddress().call()).to.be.equal(userOne);
+
+            await contract.methods.depositUserTwo().send({
+                value: oneEther.toString(),
+                from: userTwo
+            });
+
+            expect(await contract.methods.userTwoAddress().call()).to.be.equal(userTwo);
+        });
     });
 });
