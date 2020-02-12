@@ -30,7 +30,7 @@ describe('HeadTail', () => {
 
             const oneEther = BigInt(1 * 10 ** 18);
 
-            await contract.methods.depositUserOne().send({
+            await contract.methods.depositUserOne(true).send({
                 value: oneEther.toString()
             });
 
@@ -44,7 +44,7 @@ describe('HeadTail', () => {
 
             const oneEther = BigInt(1 * 10 ** 18);
 
-            await contract.methods.depositUserOne().send({
+            await contract.methods.depositUserOne(true).send({
                 value: oneEther.toString()
             });
 
@@ -54,7 +54,7 @@ describe('HeadTail', () => {
         it('does not save address of user if deposited value is below 1 ether', async () => {
             const oneEther = BigInt(1 * 10 ** 18);
 
-            await contract.methods.depositUserOne().send({
+            await contract.methods.depositUserOne(true).send({
                 value: (oneEther - BigInt(1)).toString()
             });
 
@@ -73,14 +73,14 @@ describe('HeadTail', () => {
 
             const oneEther = BigInt(1 * 10 ** 18);
 
-            await contract.methods.depositUserOne().send({
+            await contract.methods.depositUserOne(true).send({
                 value: oneEther.toString(),
                 from: userOne
             });
 
             expect(await contract.methods.userOneAddress().call()).to.be.equal(userOne);
 
-            await contract.methods.depositUserTwo().send({
+            await contract.methods.depositUserTwo(true).send({
                 value: oneEther.toString(),
                 from: userTwo
             });

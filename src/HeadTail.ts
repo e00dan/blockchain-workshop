@@ -32,18 +32,20 @@ export async function deployHeadTailContract(web3: Web3, defaultSender: string):
 
     const oneEther = 1 * 10 ** 18;
 
-    await headTail.methods.depositUserOne().send({
+    await headTail.methods.depositUserOne(true).send({
         value: oneEther,
         from: userOne
     });
 
-    await headTail.methods.depositUserTwo().send({
+    await headTail.methods.depositUserTwo(true).send({
         value: oneEther,
         from: userTwo
     });
 
     console.log({
         userOne: await headTail.methods.userOneAddress().call(),
-        userTwo: await headTail.methods.userTwoAddress().call()
+        userTwo: await headTail.methods.userTwoAddress().call(),
+        userOneChoice: await headTail.methods.userOneChoice().call(),
+        userTwoChoice: await headTail.methods.userTwoChoice().call()
     });
 })();
