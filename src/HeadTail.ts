@@ -1,24 +1,8 @@
-import { setupLoader } from '@openzeppelin/contract-loader';
 import Web3 from 'web3';
-import { HeadTail } from './types/HeadTail';
 import { CONFIG } from './config';
+import { deployHeadTailContract } from './deploy';
 
-export async function deployHeadTailContract(web3: Web3, defaultSender: string): Promise<HeadTail> {
-    const loader = setupLoader({
-        provider: web3,
-        defaultSender,
-        defaultGasPrice: 0
-    }).web3;
-
-    const HeadTailContract: HeadTail = loader.fromArtifact('HeadTail');
-
-    return HeadTailContract.deploy({
-        data: '',
-        arguments: []
-    }).send({
-        from: defaultSender
-    });
-}
+const oneEther = BigInt(1 * 10 ** 18).toString();
 
 (async () => {
     const web3 = new Web3(CONFIG.WEB3_PROVIDER_URL);
@@ -28,16 +12,9 @@ export async function deployHeadTailContract(web3: Web3, defaultSender: string):
     const userOne = accounts[0];
     const userTwo = accounts[1];
 
-    const headTail = await deployHeadTailContract(web3, userOne);
+    const headTail = await deployHeadTailContract(web3, userOne, true);
 
-    const oneEther = 1 * 10 ** 18;
-
-    await headTail.methods.depositUserOne(true).send({
-        value: oneEther,
-        from: userOne
-    });
-
-    await headTail.methods.depositUserTwo(true).send({
+    await headTail.methods.depositUserTwo(false).send({
         value: oneEther,
         from: userTwo
     });

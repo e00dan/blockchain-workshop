@@ -1,25 +1,17 @@
-import { describe, beforeEach } from 'mocha';
+import { describe } from 'mocha';
 import { expect } from 'chai';
 import Web3 from 'web3';
 
-import { HeadTail } from '../types/HeadTail';
-import { deployHeadTailContract } from '../HeadTail';
 import { CONFIG } from '../config';
-
-const EMPTY_ADDRESS = '0x0000000000000000000000000000000000000000';
+import { deployHeadTailContract } from '../deploy';
 
 describe('HeadTail', () => {
     let web3: Web3;
     let accounts: string[];
-    let contract: HeadTail;
 
     before(async () => {
         web3 = new Web3(CONFIG.WEB3_PROVIDER_URL);
         accounts = await web3.eth.getAccounts();
-    });
-
-    beforeEach(async () => {
-        contract = await deployHeadTailContract(web3, accounts[0]);
     });
 
     describe('Stage 1', () => {
@@ -30,9 +22,7 @@ describe('HeadTail', () => {
 
             const oneEther = BigInt(1 * 10 ** 18);
 
-            await contract.methods.depositUserOne(true).send({
-                value: oneEther.toString()
-            });
+            await deployHeadTailContract(web3, accounts[0], true);
 
             expect(await web3.eth.getBalance(account)).to.be.equal(
                 (startingBalance - oneEther).toString()
@@ -42,28 +32,25 @@ describe('HeadTail', () => {
         it('saves address of user', async () => {
             const account = accounts[0];
 
-            const oneEther = BigInt(1 * 10 ** 18);
-
-            await contract.methods.depositUserOne(true).send({
-                value: oneEther.toString()
-            });
+            const contract = await deployHeadTailContract(web3, accounts[0], true);
 
             expect(await contract.methods.userOneAddress().call()).to.be.equal(account);
         });
 
-        it('does not save address of user if deposited value is below 1 ether', async () => {
-            const oneEther = BigInt(1 * 10 ** 18);
+        it('reverts when trying to deposit less than 1 ether', async () => {
+            let errorThrown = false;
 
-            await contract.methods.depositUserOne(true).send({
-                value: (oneEther - BigInt(1)).toString()
-            });
+            try {
+                await deployHeadTailContract(web3, accounts[0], true, '1');
+            } catch (error) {
+                errorThrown = true;
+                expect(error.message).to.contain(
+                    'revert user has to pass exactly 1 ether to the constructor'
+                );
+            }
 
-            expect(await contract.methods.userOneAddress().call()).to.be.equal(EMPTY_ADDRESS);
+            expect(errorThrown).to.be.equal(true);
         });
-
-        // it('reverts when trying to deposit less than 1 ether and sends it back to sender', async () => {
-
-        // });
     });
 
     describe('Stage 2', () => {
@@ -73,10 +60,7 @@ describe('HeadTail', () => {
 
             const oneEther = BigInt(1 * 10 ** 18);
 
-            await contract.methods.depositUserOne(true).send({
-                value: oneEther.toString(),
-                from: userOne
-            });
+            const contract = await deployHeadTailContract(web3, accounts[0], true);
 
             expect(await contract.methods.userOneAddress().call()).to.be.equal(userOne);
 

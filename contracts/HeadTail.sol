@@ -7,17 +7,19 @@ contract HeadTail {
     bool public userOneChoice;
     bool public userTwoChoice;
 
-    function depositUserOne(bool choice) public payable {
-        if (msg.value == 1 ether && userOneAddress == address(0) && userTwoAddress != msg.sender) {
-            userOneAddress = msg.sender;
-            userOneChoice = choice;
-        }
+    constructor(bool choice) public payable {
+        require(msg.value == 1 ether, "user has to pass exactly 1 ether to the constructor");
+
+        userOneAddress = msg.sender;
+        userOneChoice = choice;
     }
 
     function depositUserTwo(bool choice) public payable {
-        if (msg.value == 1 ether && userOneAddress != address(0) && userTwoAddress == address(0) && userOneAddress != msg.sender) {
-            userTwoAddress = msg.sender;
-            userTwoChoice = choice;
-        }
+        require(msg.value == 1 ether, "user has to pass exactly 1 ether to the constructor");
+        require(userTwoAddress == address(0), "userTwoAddress can't be already set");
+        require(userOneAddress != msg.sender, "userTwoAddress has to differ from userOneAddress");
+
+        userTwoAddress = msg.sender;
+        userTwoChoice = choice;
     }
 }
