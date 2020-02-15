@@ -37,7 +37,7 @@ yarn start:ganache
 
 ![Diagram](diagram.png?raw=true "Architecture")
 
-## Workshop stages matrix
+## Stages
 
 | Stage | Status | Description |
 | --- | --- | --- |
