@@ -16,7 +16,8 @@ export async function deployHeadTailContract(web3: Web3, defaultSender: string):
         data: '',
         arguments: []
     }).send({
-        from: defaultSender
+        from: defaultSender,
+        gas: 6000000
     });
 }
 
