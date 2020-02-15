@@ -17,4 +17,5 @@ script:
   - yarn start:ganache > /dev/null &
   - sleep 5
   - yarn compile
+  - yarn start
   - yarn test
