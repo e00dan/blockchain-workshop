@@ -1,0 +1,21 @@
+sudo: required
+dist: bionic
+language: node_js
+node_js:
+  - "12"
+
+git:
+  depth: false
+
+cache:
+  yarn: true
+
+install:
+  - yarn
+
+script:
+  - yarn start:ganache > /dev/null &
+  - sleep 5
+  - yarn compile
+  - yarn start
+  - yarn test
