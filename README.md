@@ -11,7 +11,7 @@ Build:
 yarn build
 
 // Contracts only
-yarn build:contracts
+yarn compile
 
 // TypeScript only
 yarn build:ts
