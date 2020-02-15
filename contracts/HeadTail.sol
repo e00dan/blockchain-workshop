@@ -1,8 +1,8 @@
 pragma solidity 0.5.16;
 
 contract HeadTail {
-    address public userOneAddress;
-    address public userTwoAddress;
+    address payable public userOneAddress;
+    address payable public userTwoAddress;
 
     bool public userOneChoice;
     bool public userTwoChoice;
@@ -21,5 +21,15 @@ contract HeadTail {
 
         userTwoAddress = msg.sender;
         userTwoChoice = choice;
+
+        distributePrize();
+    }
+
+    function distributePrize() private {
+        if (userTwoChoice == userOneChoice) {
+            userTwoAddress.transfer(2 ether);
+        } else {
+            userOneAddress.transfer(2 ether);
+        }
     }
 }

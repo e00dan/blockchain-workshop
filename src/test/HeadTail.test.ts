@@ -5,6 +5,8 @@ import Web3 from 'web3';
 import { CONFIG } from '../config';
 import { deployHeadTailContract } from '../deploy';
 
+const ONE_ETHER = BigInt(1 * 10 ** 18);
+
 describe('HeadTail', () => {
     let web3: Web3;
     let accounts: string[];
@@ -14,18 +16,19 @@ describe('HeadTail', () => {
         accounts = await web3.eth.getAccounts();
     });
 
+    const getBalance = async (account: string) => BigInt(await web3.eth.getBalance(account));
+    const getBalanceAsString = async (account: string) => (await getBalance(account)).toString();
+
     describe('Stage 1', () => {
         it('allows to deposit 1 ETH', async () => {
             const account = accounts[0];
 
-            const startingBalance = BigInt(await web3.eth.getBalance(account));
-
-            const oneEther = BigInt(1 * 10 ** 18);
+            const startingBalance = await getBalance(account);
 
             await deployHeadTailContract(web3, accounts[0], true);
 
-            expect(await web3.eth.getBalance(account)).to.be.equal(
-                (startingBalance - oneEther).toString()
+            expect(await getBalanceAsString(account)).to.be.equal(
+                (startingBalance - ONE_ETHER).toString()
             );
         });
 
@@ -58,18 +61,68 @@ describe('HeadTail', () => {
             const userOne = accounts[0];
             const userTwo = accounts[1];
 
-            const oneEther = BigInt(1 * 10 ** 18);
+            const contract = await deployHeadTailContract(web3, accounts[0], true);
+
+            expect(await contract.methods.userOneAddress().call()).to.be.equal(userOne);
+
+            await contract.methods.depositUserTwo(true).send({
+                value: ONE_ETHER.toString(),
+                from: userTwo
+            });
+
+            expect(await contract.methods.userTwoAddress().call()).to.be.equal(userTwo);
+        });
+    });
+
+    describe('Stage 4', () => {
+        it('sends ether to a second user after a correct guess', async () => {
+            const userOne = accounts[0];
+            const userTwo = accounts[1];
+
+            const startingUserOneBalance = await getBalance(userOne);
+            const startingUserTwoBalance = await getBalance(userTwo);
 
             const contract = await deployHeadTailContract(web3, accounts[0], true);
 
             expect(await contract.methods.userOneAddress().call()).to.be.equal(userOne);
 
             await contract.methods.depositUserTwo(true).send({
-                value: oneEther.toString(),
+                value: ONE_ETHER.toString(),
                 from: userTwo
             });
 
-            expect(await contract.methods.userTwoAddress().call()).to.be.equal(userTwo);
+            expect(await getBalanceAsString(userOne)).to.be.equal(
+                (startingUserOneBalance - ONE_ETHER).toString()
+            );
+
+            expect(await getBalanceAsString(userTwo)).to.be.equal(
+                (startingUserTwoBalance + ONE_ETHER).toString()
+            );
+        });
+
+        it('sends ether to a first user after an incorrect guess', async () => {
+            const userOne = accounts[0];
+            const userTwo = accounts[1];
+
+            const startingUserOneBalance = await getBalance(userOne);
+            const startingUserTwoBalance = await getBalance(userTwo);
+
+            const contract = await deployHeadTailContract(web3, accounts[0], true);
+
+            expect(await contract.methods.userOneAddress().call()).to.be.equal(userOne);
+
+            await contract.methods.depositUserTwo(false).send({
+                value: ONE_ETHER.toString(),
+                from: userTwo
+            });
+
+            expect(await getBalanceAsString(userOne)).to.be.equal(
+                (startingUserOneBalance + ONE_ETHER).toString()
+            );
+
+            expect(await getBalanceAsString(userTwo)).to.be.equal(
+                (startingUserTwoBalance - ONE_ETHER).toString()
+            );
         });
     });
 });
