@@ -6,6 +6,8 @@ import { HeadTail } from '../types/HeadTail';
 import { deployHeadTailContract } from '../HeadTail';
 import { CONFIG } from '../config';
 
+const EMPTY_ADDRESS = '0x0000000000000000000000000000000000000000';
+
 describe('HeadTail', () => {
     let web3: Web3;
     let accounts: string[];
@@ -56,7 +58,9 @@ describe('HeadTail', () => {
                 value: (oneEther - BigInt(1)).toString()
             });
 
-            expect(await contract.methods.depositingUserAddress().call()).to.be.equal(null);
+            expect(await contract.methods.depositingUserAddress().call()).to.be.equal(
+                EMPTY_ADDRESS
+            );
         });
 
         // it('reverts when trying to deposit less than 1 ether and sends it back to sender', async () => {
