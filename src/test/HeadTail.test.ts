@@ -3,8 +3,8 @@ import { expect } from 'chai';
 import Web3 from 'web3';
 
 import { HeadTail } from '../types/HeadTail';
-import { deployHeadTailContract } from '../HeadTail';
 import { CONFIG } from '../config';
+import { deployHeadTailContract } from '../deploy';
 
 const EMPTY_ADDRESS = '0x0000000000000000000000000000000000000000';
 
