@@ -47,6 +47,6 @@ yarn start:ganache
 | [stage-3](https://github.com/Kuzirashi/blockchain-workshop/tree/stage-3) | ![](https://api.travis-ci.com/Kuzirashi/blockchain-workshop.svg?branch=stage-3) | Add ability to save boolean along with the address |
 | [stage-3.1](https://github.com/Kuzirashi/blockchain-workshop/tree/stage-3.1) | ![](https://api.travis-ci.com/Kuzirashi/blockchain-workshop.svg?branch=stage-3.1) | Move user one deposit function to constructor |
 | [stage-4](https://github.com/Kuzirashi/blockchain-workshop/tree/stage-4) | ![](https://api.travis-ci.com/Kuzirashi/blockchain-workshop.svg?branch=stage-4) | Add prize distribution function, sends ETH after a correct guess |
-| [stage-5](https://github.com/Kuzirashi/blockchain-workshop/tree/stage-5) | ![](https://api.travis-ci.com/Kuzirashi/blockchain-workshop.svg?branch=stage-5) |  |
+| [stage-5](https://github.com/Kuzirashi/blockchain-workshop/tree/stage-5) | ![](https://api.travis-ci.com/Kuzirashi/blockchain-workshop.svg?branch=stage-5) | Encrypt user one choice with secret |
 
 Authored by [Daniel Kmak](https://www.linkedin.com/in/kmakdaniel/).
