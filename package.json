@@ -27,10 +27,12 @@
     "types": "dist/js/src/index.d.ts",
     "dependencies": {
         "@openzeppelin/contract-loader": "0.6.1",
+        "ethereumjs-util": "6.2.0",
         "web3": "1.2.6"
     },
     "devDependencies": {
         "@openzeppelin/cli": "2.8.0-rc.0",
+        "@openzeppelin/contracts": "3.0.0-beta.0",
         "@types/chai": "4.2.9",
         "@types/mocha": "7.0.1",
         "@types/node": "12.12.27",

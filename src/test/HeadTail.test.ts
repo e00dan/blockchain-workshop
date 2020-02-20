@@ -3,7 +3,7 @@ import { expect } from 'chai';
 import Web3 from 'web3';
 
 import { CONFIG } from '../config';
-import { deployHeadTailContract } from '../deploy';
+import { deployHeadTailContract, createChoiceSignature } from '../common';
 
 const ONE_ETHER = BigInt(1 * 10 ** 18);
 
@@ -25,7 +25,7 @@ describe('HeadTail', () => {
 
             const startingBalance = await getBalance(account);
 
-            await deployHeadTailContract(web3, accounts[0], true);
+            await deployHeadTailContract(web3, accounts[0], '0x0');
 
             expect(await getBalanceAsString(account)).to.be.equal(
                 (startingBalance - ONE_ETHER).toString()
@@ -35,7 +35,7 @@ describe('HeadTail', () => {
         it('saves address of user', async () => {
             const account = accounts[0];
 
-            const contract = await deployHeadTailContract(web3, accounts[0], true);
+            const contract = await deployHeadTailContract(web3, accounts[0], '0x0');
 
             expect(await contract.methods.userOneAddress().call()).to.be.equal(account);
         });
@@ -44,7 +44,7 @@ describe('HeadTail', () => {
             let errorThrown = false;
 
             try {
-                await deployHeadTailContract(web3, accounts[0], true, '1');
+                await deployHeadTailContract(web3, accounts[0], '0x0', '1');
             } catch (error) {
                 errorThrown = true;
                 expect(error.message).to.contain(
@@ -61,7 +61,7 @@ describe('HeadTail', () => {
             const userOne = accounts[0];
             const userTwo = accounts[1];
 
-            const contract = await deployHeadTailContract(web3, accounts[0], true);
+            const contract = await deployHeadTailContract(web3, accounts[0], '0x0');
 
             expect(await contract.methods.userOneAddress().call()).to.be.equal(userOne);
 
@@ -74,7 +74,7 @@ describe('HeadTail', () => {
         });
     });
 
-    describe('Stage 4', () => {
+    describe('Stage 5', () => {
         it('sends ether to a second user after a correct guess', async () => {
             const userOne = accounts[0];
             const userTwo = accounts[1];
@@ -82,13 +82,27 @@ describe('HeadTail', () => {
             const startingUserOneBalance = await getBalance(userOne);
             const startingUserTwoBalance = await getBalance(userTwo);
 
-            const contract = await deployHeadTailContract(web3, accounts[0], true);
+            const userOneChoice = true;
+            const userOneChoiceSecret = '312d35asd454asddasddd2344124444444fyguijkfdr4';
+
+            const { signedChoiceHash } = await createChoiceSignature(
+                userOne,
+                userOneChoice,
+                userOneChoiceSecret,
+                web3
+            );
+
+            const contract = await deployHeadTailContract(web3, userOne, signedChoiceHash);
 
             expect(await contract.methods.userOneAddress().call()).to.be.equal(userOne);
 
             await contract.methods.depositUserTwo(true).send({
                 value: ONE_ETHER.toString(),
                 from: userTwo
+            });
+
+            await contract.methods.revealUserOneChoice(userOneChoice, userOneChoiceSecret).send({
+                from: userOne
             });
 
             expect(await getBalanceAsString(userOne)).to.be.equal(
@@ -100,29 +114,8 @@ describe('HeadTail', () => {
             );
         });
 
-        it('sends ether to a first user after an incorrect guess', async () => {
-            const userOne = accounts[0];
-            const userTwo = accounts[1];
+        // it('sends ether to a first user after an incorrect guess', async () => {
 
-            const startingUserOneBalance = await getBalance(userOne);
-            const startingUserTwoBalance = await getBalance(userTwo);
-
-            const contract = await deployHeadTailContract(web3, accounts[0], true);
-
-            expect(await contract.methods.userOneAddress().call()).to.be.equal(userOne);
-
-            await contract.methods.depositUserTwo(false).send({
-                value: ONE_ETHER.toString(),
-                from: userTwo
-            });
-
-            expect(await getBalanceAsString(userOne)).to.be.equal(
-                (startingUserOneBalance + ONE_ETHER).toString()
-            );
-
-            expect(await getBalanceAsString(userTwo)).to.be.equal(
-                (startingUserTwoBalance - ONE_ETHER).toString()
-            );
-        });
+        // });
     });
 });
