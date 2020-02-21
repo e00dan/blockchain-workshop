@@ -13,6 +13,9 @@ describe('HeadTail', () => {
         accounts = await web3.eth.getAccounts();
     });
 
+    const getBalance = async (account: string) => BigInt(await web3.eth.getBalance(account));
+    const getBalanceAsString = async (account: string) => (await getBalance(account)).toString();
+
     describe('Stage 1', () => {
         it('allows to deposit 1 ETH', async () => {
             const account = accounts[0];
@@ -23,7 +26,7 @@ describe('HeadTail', () => {
 
             await deployHeadTailContract(web3, accounts[0], true);
 
-            expect(await web3.eth.getBalance(account)).to.be.equal(
+            expect(await getBalanceAsString(account)).to.be.equal(
                 (startingBalance - oneEther).toString()
             );
         });
