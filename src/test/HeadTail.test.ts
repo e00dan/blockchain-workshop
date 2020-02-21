@@ -1,9 +1,8 @@
 import { describe } from 'mocha';
 import { expect } from 'chai';
 import Web3 from 'web3';
-
 import { CONFIG } from '../config';
-import { deployHeadTailContract } from '../deploy';
+import { deployHeadTailContract } from '../common';
 
 describe('HeadTail', () => {
     let web3: Web3;
