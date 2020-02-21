@@ -1,7 +1,7 @@
 import Web3 from 'web3';
-import { setupLoader } from '@openzeppelin/contract-loader';
 import { fromRpcSig, toRpcSig } from 'ethereumjs-util';
 import { HeadTail } from './types/HeadTail';
+import * as HeadTailJSON from '../build/contracts/HeadTail.json';
 
 const oneEther = BigInt(1 * 10 ** 18).toString();
 
@@ -11,16 +11,10 @@ export async function deployHeadTailContract(
     choiceHash: string,
     value: string = oneEther
 ): Promise<HeadTail> {
-    const loader = setupLoader({
-        provider: web3,
-        defaultSender,
-        defaultGasPrice: 0
-    }).web3;
-
-    const HeadTailContract: HeadTail = loader.fromArtifact('HeadTail');
+    const HeadTailContract: HeadTail = new web3.eth.Contract(HeadTailJSON.abi as any) as any;
 
     return HeadTailContract.deploy({
-        data: '',
+        data: HeadTailJSON.bytecode,
         arguments: [choiceHash]
     }).send({
         from: defaultSender,

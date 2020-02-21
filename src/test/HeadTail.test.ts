@@ -2,8 +2,8 @@ import { describe } from 'mocha';
 import { expect } from 'chai';
 import Web3 from 'web3';
 
-import { CONFIG } from '../config';
 import { deployHeadTailContract, createChoiceSignature } from '../common';
+import { CONFIG } from '../config';
 
 const ONE_ETHER = BigInt(1 * 10 ** 18);
 

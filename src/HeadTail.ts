@@ -51,7 +51,9 @@ const oneEther = BigInt(1 * 10 ** 18).toString();
         bufferToHex(s)
     );
 
-    await headTail.methods.revealUserOneChoice(true, secret).send();
+    await headTail.methods.revealUserOneChoice(true, secret).send({
+        from: userOne
+    });
 
     console.log({
         choiceHash,
