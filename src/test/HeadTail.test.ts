@@ -3,7 +3,7 @@ import { expect } from 'chai';
 import Web3 from 'web3';
 
 import { HeadTail } from '../types/HeadTail';
-import { deployHeadTailContract } from '../HeadTail';
+import { deployHeadTailContract } from '../common';
 import { CONFIG } from '../config';
 
 const EMPTY_ADDRESS = '0x0000000000000000000000000000000000000000';
@@ -31,6 +31,7 @@ describe('HeadTail', () => {
             const oneEther = BigInt(1 * 10 ** 18);
 
             await contract.methods.depositUserOne().send({
+                from: account,
                 value: oneEther.toString()
             });
 
@@ -45,6 +46,7 @@ describe('HeadTail', () => {
             const oneEther = BigInt(1 * 10 ** 18);
 
             await contract.methods.depositUserOne().send({
+                from: account,
                 value: oneEther.toString()
             });
 
@@ -53,8 +55,10 @@ describe('HeadTail', () => {
 
         it('does not save address of user if deposited value is below 1 ether', async () => {
             const oneEther = BigInt(1 * 10 ** 18);
+            const account = accounts[0];
 
             await contract.methods.depositUserOne().send({
+                from: account,
                 value: (oneEther - BigInt(1)).toString()
             });
 

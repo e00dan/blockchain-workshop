@@ -4,5 +4,7 @@
         "javascriptreact",
         "typescript",
         "typescriptreact"
-    ]
+    ],
+    "solidity.packageDefaultDependenciesContractsDirectory": "",
+    "solidity.packageDefaultDependenciesDirectory": "node_modules"
 }
