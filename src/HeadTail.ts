@@ -1,6 +1,6 @@
 import Web3 from 'web3';
 import { CONFIG } from './config';
-import { deployHeadTailContract } from './deploy';
+import { deployHeadTailContract } from './common';
 
 const oneEther = BigInt(1 * 10 ** 18).toString();
 
