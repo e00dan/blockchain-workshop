@@ -7,6 +7,7 @@ module.exports = {
     },
     "extends": [
         "airbnb-base",
+        "plugin:react/recommended",
         "plugin:@typescript-eslint/recommended",
         "prettier/@typescript-eslint",
         "plugin:prettier/recommended"
@@ -52,13 +53,19 @@ module.exports = {
             }
          ],
          "import/no-extraneous-dependencies": "off",
-        "no-useless-constructor": "off"
+        "no-useless-constructor": "off",
+        "react/prop-types": "off",
+        "react/jsx-no-target-blank": "off",
     },
     "settings": {
         "import/resolver": {
           "node": {
             "extensions": [".js", ".jsx", ".ts", ".tsx", ".d.ts"]
           }
+        },
+        "react": {
+            "pragma": "React",
+            "version": "detect"
         }
     }
 };

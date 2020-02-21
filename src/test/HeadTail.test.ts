@@ -3,7 +3,7 @@ import { expect } from 'chai';
 import Web3 from 'web3';
 
 import { HeadTail } from '../types/HeadTail';
-import { deployHeadTailContract } from '../HeadTail';
+import { deployHeadTailContract } from '../common';
 import { CONFIG } from '../config';
 
 describe('HeadTail', () => {
