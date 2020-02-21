@@ -1,7 +1,6 @@
 import { describe } from 'mocha';
 import { expect } from 'chai';
 import Web3 from 'web3';
-
 import { deployHeadTailContract, createChoiceSignature } from '../common';
 import { CONFIG } from '../config';
 

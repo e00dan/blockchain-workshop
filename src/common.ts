@@ -7,7 +7,7 @@ const oneEther = BigInt(1 * 10 ** 18).toString();
 
 export async function deployHeadTailContract(
     web3: Web3,
-    defaultSender: string,
+    account: string,
     choiceHash: string,
     value: string = oneEther
 ): Promise<HeadTail> {
@@ -17,7 +17,7 @@ export async function deployHeadTailContract(
         data: HeadTailJSON.bytecode,
         arguments: [choiceHash]
     }).send({
-        from: defaultSender,
+        from: account,
         value,
         gas: 6000000
     });
