@@ -1,8 +1,8 @@
 sudo: required
-dist: bionic
+dist: focal
 language: node_js
 node_js:
-  - "12"
+  - "14"
 
 git:
   depth: false
@@ -16,6 +16,6 @@ install:
 script:
   - yarn start:ganache > /dev/null &
   - sleep 5
-  - yarn compile
+  - yarn build
   - yarn start
   - yarn test
