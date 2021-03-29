@@ -3,7 +3,10 @@ dist: focal
 language: node_js
 node_js:
   - "14"
-
+addons:
+  apt:
+    packages:
+      - python2.7
 git:
   depth: false
 
