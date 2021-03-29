@@ -14,7 +14,7 @@ yarn build
 yarn compile
 
 // TypeScript only
-yarn build:ts
+yarn build:types && yarn build:ts
 ```
 
 Start `src/HeadTail.ts`:

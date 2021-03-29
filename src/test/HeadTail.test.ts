@@ -39,19 +39,16 @@ describe('HeadTail', () => {
             expect(await contract.methods.userOneAddress().call()).to.be.equal(account);
         });
 
-        it('reverts when trying to deposit less than 1 ether', async () => {
-            let errorThrown = false;
+        it('allows depositing 777 wei', async () => {
+            const account = accounts[0];
 
-            try {
-                await deployHeadTailContract(web3, accounts[0], '0x0', '1');
-            } catch (error) {
-                errorThrown = true;
-                expect(error.message).to.contain(
-                    'revert user has to pass exactly 1 ether to the constructor'
-                );
-            }
+            const startingBalance = await getBalance(account);
 
-            expect(errorThrown).to.be.equal(true);
+            await deployHeadTailContract(web3, accounts[0], '0x0', '777');
+
+            expect(await getBalanceAsString(account)).to.be.equal(
+                (startingBalance - BigInt(777)).toString()
+            );
         });
     });
 

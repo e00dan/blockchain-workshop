@@ -3,24 +3,24 @@ import { fromRpcSig, toRpcSig } from 'ethereumjs-util';
 import { HeadTail } from './types/HeadTail';
 import * as HeadTailJSON from '../build/contracts/HeadTail.json';
 
-const oneEther = BigInt(1 * 10 ** 18).toString();
+const DEPOSIT_AMOUNT = BigInt(1 * 10 ** 18).toString();
 
 export async function deployHeadTailContract(
     web3: Web3,
     account: string,
     choiceHash: string,
-    value: string = oneEther
+    value: string = DEPOSIT_AMOUNT
 ): Promise<HeadTail> {
     const HeadTailContract: HeadTail = new web3.eth.Contract(HeadTailJSON.abi as any) as any;
 
-    return HeadTailContract.deploy({
+    return (HeadTailContract.deploy({
         data: HeadTailJSON.bytecode,
-        arguments: [choiceHash]
+        arguments: [choiceHash, value]
     }).send({
         from: account,
         value,
         gas: 6000000
-    });
+    }) as any) as HeadTail;
 }
 
 export function createChoiceHash(choice: boolean, secret: string, web3: Web3) {
