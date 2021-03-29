@@ -3,15 +3,16 @@ dist: focal
 language: node_js
 node_js:
   - "14"
-addons:
-  apt:
-    packages:
-      - python2.7
+
 git:
   depth: false
 
 cache:
   yarn: true
+
+before_install:
+  - sudo apt-get update
+  - sudo apt-get install python2
 
 install:
   - yarn
