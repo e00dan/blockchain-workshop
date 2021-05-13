@@ -5,13 +5,14 @@
         "declaration": true,
         "module": "commonjs",
         "moduleResolution": "node",
-        "target": "es2020",
+        "target": "esnext",
         "jsx": "react",
         "allowSyntheticDefaultImports": true,
         "resolveJsonModule": true,
         "esModuleInterop": true,
         "lib": [
             "es2018",
+            "ES2020",
             "dom"
         ],
         "skipLibCheck": true,

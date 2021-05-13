@@ -1,13 +1,28 @@
+import { Amount } from '@lay2/pw-core';
 import React, { useEffect, useState } from 'react';
 import Web3 from 'web3';
-import { deployHeadTailContract } from '../common';
-import { HeadTail } from '../types/HeadTail';
+import { createChoiceSignature } from '../common';
+import { HeadTailPolyjuice } from '../lib/contracts/HeadTail';
+import { initPWCore } from '../lib/portalwallet/pw';
 import './app.scss';
+// import PolyjuiceHttpProvider from '../lib/polyjuice/polyjuice_provider.min.js';
 
 async function createWeb3() {
     // Modern dapp browsers...
     if ((window as any).ethereum) {
-        const web3 = new Web3((window as any).ethereum);
+        // const godwoken_rpc_url = 'http://localhost:8024';
+        // const provider_config = {
+        //     godwoken: {
+        //         rollup_type_hash:
+        //             '0xf70aa98a96fba847185be1b58c1d1e3cae7ad91f971eecc5749799d5e72939f0',
+        //         eth_account_lock: {
+        //             code_hash: '0xeeb39042bd7a1907e35823438db35f0a67fd495464abd0d183220e1ee8dda009',
+        //             hash_type: 'type'
+        //         }
+        //     }
+        // };
+        // const provider = new PolyjuiceHttpProvider(godwoken_rpc_url, provider_config);
+        const web3 = new Web3(Web3.givenProvider);
 
         try {
             // Request account access if needed
@@ -23,14 +38,167 @@ async function createWeb3() {
     return null;
 }
 
+const SUDT_IT = 1;
+const SECRET = '312d35asd454asddasddd2344124444444fyguijkfdr4';
+
+// true = head, false = tail
+type CHOICE_TYPE = boolean;
+const EMPTY_ADDRESS = '0x0000000000000000000000000000000000000000';
+
 export function App() {
     const [web3, setWeb3] = useState<Web3>(null);
-    const [contract, setContract] = useState<HeadTail>();
+    const [contract, setContract] = useState<HeadTailPolyjuice>();
+    const [accounts, setAccounts] = useState<string[]>();
+    const [l1Balance, setL1Balance] = useState<Amount>();
+    const [l2Balance, setL2Balance] = useState<bigint>();
+    const [godwokenAccountId, setGodwokenAccountId] = useState<number>();
+    const [firstUserChoice, setFirstUserChoice] = useState<CHOICE_TYPE>(true);
+    const [secondUserChoice, setSecondUserChoice] = useState<CHOICE_TYPE>(true);
+    const [revealedChoice, setRevealedChoice] = useState<CHOICE_TYPE>(true);
+    const [depositAmount, setDepositAmount] = useState<string>('777');
+    const [existingContractIdInputValue, setExistingContractIdInputValue] = useState<string>();
+    const [firstUserAddress, setFirstUserAddress] = useState<string | undefined>();
+    const [secondUserAddress, setSecondUserAddress] = useState<string | undefined>();
+    const [contractBalance, setContractBalance] = useState<bigint | undefined>();
+    const [deployedContractDepositAmount, setDeployedContractDepositAmount] = useState<string>();
+
+    const account = accounts?.[0];
 
     async function deployContract() {
-        const accounts = await web3.eth.getAccounts();
+        const { signedChoiceHash, choiceHash, v, r, s } = await createChoiceSignature(
+            account,
+            firstUserChoice,
+            SECRET,
+            web3
+        );
 
-        setContract(await deployHeadTailContract(web3, accounts[0], '0x'));
+        console.log({
+            signedChoiceHash,
+            choiceHash,
+            v,
+            r,
+            s
+        });
+
+        const _contract = new HeadTailPolyjuice(web3);
+        await _contract.deploy(signedChoiceHash, depositAmount, godwokenAccountId);
+
+        setContract(_contract);
+        setDeployedContractDepositAmount(depositAmount);
+    }
+
+    async function createChoiceHash() {
+        const data = await contract.createChoiceHash(secondUserChoice, SECRET, account);
+
+        console.log('createChoiceHash', {
+            data
+        });
+
+        return data;
+    }
+
+    async function verifySignature() {
+        const web3Ethereum = new Web3((window as any).ethereum);
+
+        const { signedChoiceHash, choiceHash, v, r, s } = await createChoiceSignature(
+            account,
+            firstUserChoice,
+            SECRET,
+            web3Ethereum
+        );
+
+        console.log({
+            signedChoiceHash,
+            choiceHash,
+            v,
+            r,
+            s
+        });
+
+        // const hash = await contract.createChoiceHash(secondUserChoice, SECRET, account);
+
+        const data = await contract.verify(choiceHash, signedChoiceHash, account);
+
+        console.log('verifySignature', {
+            data
+        });
+
+        return data;
+    }
+
+    async function getUserOneAddress() {
+        const value = await contract.getUserOneAddress(account);
+
+        setFirstUserAddress(value);
+    }
+
+    async function getUserTwoAddress() {
+        const value = await contract.getUserTwoAddress(account);
+
+        setSecondUserAddress(value);
+    }
+
+    async function getStake(_contract: HeadTailPolyjuice = contract) {
+        const value = await _contract.getStake(account);
+
+        setDeployedContractDepositAmount(value.toString());
+    }
+
+    const onFirstUserChoiceChange: React.ChangeEventHandler<HTMLSelectElement> = event => {
+        setFirstUserChoice(event.target.value === 'head');
+    };
+
+    const onSecondUserChoiceChange: React.ChangeEventHandler<HTMLSelectElement> = event => {
+        setSecondUserChoice(event.target.value === 'head');
+    };
+
+    const onRevealedChoiceChange: React.ChangeEventHandler<HTMLSelectElement> = event => {
+        setRevealedChoice(event.target.value === 'head');
+    };
+
+    async function getContractBalance(_contract = contract) {
+        // const contractAccountId = await getAccountIdByEthAddress(_contract.contractAccountId);
+        setContractBalance(await getBalanceByEthAddress(SUDT_IT, _contract.contractAccountId));
+    }
+
+    async function setExistingContractId(contractAccountId: string) {
+        const _contract = new HeadTailPolyjuice(web3);
+        _contract.useDeployed(contractAccountId);
+
+        setContract(_contract);
+        await getStake(_contract);
+        await getContractBalance(_contract);
+        setFirstUserAddress(undefined);
+        setSecondUserAddress(undefined);
+    }
+
+    async function depositUserOne() {
+        const web3Ethereum = new Web3((window as any).ethereum);
+
+        const { signedChoiceHash, choiceHash, v, r, s } = await createChoiceSignature(
+            account,
+            firstUserChoice,
+            SECRET,
+            web3Ethereum
+        );
+
+        console.log({
+            signedChoiceHash,
+            choiceHash,
+            v,
+            r,
+            s
+        });
+
+        await contract.depositUserOne(signedChoiceHash, depositAmount, account);
+    }
+
+    async function guess() {
+        await contract.depositUserTwo(secondUserChoice, deployedContractDepositAmount, account);
+    }
+
+    async function revealUserOneChoice() {
+        await contract.revealUserOneChoice(secondUserChoice, SECRET, account);
     }
 
     useEffect(() => {
@@ -39,16 +207,154 @@ export function App() {
         }
 
         (async () => {
-            setWeb3(await createWeb3());
+            const _web3 = await createWeb3();
+            setWeb3(_web3);
+
+            const _accounts = [(window as any).ethereum.selectedAddress];
+            setAccounts(_accounts);
+            console.log({ _accounts });
+
+            // const { pwcore, balance: _balance } = await initPWCore();
+            // console.log(pwcore);
+
+            // setL1Balance(_balance);
+
+            if (_accounts && _accounts[0]) {
+                console.log('call eth.getBalance');
+                const _l2Balance = BigInt(await _web3.eth.getBalance(_accounts[0]));
+                setL2Balance(_l2Balance);
+                console.log('l2 balance', { _l2Balance });
+            }
         })();
     });
 
+    const LoadingIndicator = () => <span className="rotating-icon">⚙️</span>;
+
     return (
         <div>
-            Deployed contract address: <b>{contract?.options?.address}</b>
+            <div>
+                Your ETH address:{' '}
+                <b>
+                    {accounts?.[0]}
+                    {/* (L1 balance: {l1Balance?.toString() || <LoadingIndicator />}{' '} */}
+                    {/* CKB) */}
+                </b>{' '}
+                | Your Godwoken account id:{' '}
+                <b>
+                    {godwokenAccountId || <LoadingIndicator />} (L2 balance:{' '}
+                    {l2Balance ? (l2Balance / 10n ** 8n).toString() : <LoadingIndicator />} CKB)
+                </b>
+            </div>
+            Deployed contract address: <b>{contract?.contractAccountId}</b>{' '}
+            {deployedContractDepositAmount && (
+                <> | Deposit amount: {deployedContractDepositAmount} Shannons</>
+            )}
+            {contractBalance && <> | Contract balance: {contractBalance.toString()} Shannons</>}
             <br />
             <br />
-            <button onClick={deployContract}>Deploy contract</button>
+            Values below are: choice, deposit amount (in Shannons [1/10^8 CKB]), secret string.
+            <br />
+            <br />
+            <select onChange={onFirstUserChoiceChange}>
+                <option value="head">Head</option>
+                <option value="tail">Tail</option>
+            </select>
+            <input value={depositAmount} onChange={e => setDepositAmount(e.target.value)} />
+            <input value={SECRET} disabled />
+            <br />
+            <br />
+            <p>
+                The button below will deploy a smart-contract where two players can play against
+                each other and win staked asset. The first player needs to deploy a contract and
+                pick Head or Tail. Alongside with the choice, the first player also deposits a
+                specified amount of tokens. The second player will have to deposit exactly the same
+                amount of tokens when he tries to guess the choice. Whoever wins, gets all deposited
+                tokens.
+            </p>
+            <button onClick={deployContract} disabled={!l2Balance}>
+                Deploy contract
+            </button>
+            &nbsp;or&nbsp;
+            <input
+                placeholder="Existing contract id"
+                onChange={e => setExistingContractIdInputValue(e.target.value)}
+            />
+            <button
+                disabled={!existingContractIdInputValue || !l2Balance}
+                onClick={() => setExistingContractId(existingContractIdInputValue)}
+            >
+                Use existing contract
+            </button>
+            <br />
+            <br />
+            <button onClick={getUserOneAddress} disabled={!contract}>
+                Get first user address
+            </button>
+            {firstUserAddress ? <>&nbsp;&nbsp;Address: {firstUserAddress.toString()}</> : null}
+            <br />
+            <br />
+            <button onClick={getUserTwoAddress} disabled={!contract}>
+                Get second user address
+            </button>
+            {secondUserAddress ? <>&nbsp;&nbsp;Address: {secondUserAddress.toString()}</> : null}
+            <br />
+            <br />
+            <button
+                onClick={depositUserOne}
+                disabled={
+                    !contract ||
+                    Boolean(
+                        firstUserAddress &&
+                            firstUserAddress !== '0' &&
+                            firstUserAddress !== EMPTY_ADDRESS
+                    )
+                }
+            >
+                Deposit user one
+            </button>
+            <br />
+            <br />
+            <button
+                onClick={guess}
+                disabled={
+                    !contract || Boolean(secondUserAddress && secondUserAddress !== EMPTY_ADDRESS)
+                }
+            >
+                Guess (as second user)
+            </button>
+            <select
+                onChange={onSecondUserChoiceChange}
+                disabled={!contract || Boolean(secondUserAddress)}
+            >
+                <option value="head">Head</option>
+                <option value="tail">Tail</option>
+            </select>
+            <br />
+            <p>Second user needs to be different than the user who created the bet.</p>
+            <hr />
+            <button onClick={revealUserOneChoice} disabled={!contract}>
+                Submit original choice and settle (as first user)
+            </button>
+            <select onChange={onRevealedChoiceChange} disabled={!contract}>
+                <option value="head">Head</option>
+                <option value="tail">Tail</option>
+            </select>
+            <input value={SECRET} disabled />
+            <br />
+            <br />
+            <hr />
+            <button onClick={createChoiceHash}>Create choice hash</button>
+            <button onClick={verifySignature}>Verify signature</button>
+            <hr />
+            The above function submits the original encrypted choice to the smart-contract and the
+            winner is selected based on the correctness of the second user guess. First user needs
+            to submit his choice alongside the secret random string (security reasons).
+            <br />
+            <br />
+            <br />
+            <hr />
+            The contract is deployed on Nervos Layer 2 - Godwoken + Polyjuice. After each
+            transaction you might need to wait up to 120 seconds for the status to be reflected.
         </div>
     );
 }

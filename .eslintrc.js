@@ -56,6 +56,8 @@ module.exports = {
         "no-useless-constructor": "off",
         "react/prop-types": "off",
         "react/jsx-no-target-blank": "off",
+        'max-classes-per-file': 'off',
+        '@typescript-eslint/interface-name-prefix': 'off'
     },
     "settings": {
         "import/resolver": {

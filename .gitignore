@@ -4,3 +4,4 @@ dist
 build
 .openzeppelin/.session
 src/types
+yarn-error.log

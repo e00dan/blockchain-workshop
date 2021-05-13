@@ -2,7 +2,7 @@
     "extends": "./tsconfig.build.json",
     "compilerOptions": {
         "types": ["mocha"],
-        "target": "es2020",
+        "target": "esnext",
         "experimentalDecorators": true
     }
 }
