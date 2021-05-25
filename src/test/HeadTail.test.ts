@@ -24,7 +24,12 @@ describe('HeadTail', () => {
 
             const startingBalance = await getBalance(account);
 
-            await deployHeadTailContract(web3, accounts[0], '0x0');
+            const contract = await deployHeadTailContract(web3, accounts[0]);
+            await contract.methods.depositUserOne('0x0', ONE_ETHER.toString()).send({
+                value: ONE_ETHER.toString(),
+                from: accounts[0],
+                gas: 5000000
+            });
 
             expect(await getBalanceAsString(account)).to.be.equal(
                 (startingBalance - ONE_ETHER).toString()
@@ -34,7 +39,12 @@ describe('HeadTail', () => {
         it('saves address of user', async () => {
             const account = accounts[0];
 
-            const contract = await deployHeadTailContract(web3, accounts[0], '0x0');
+            const contract = await deployHeadTailContract(web3, accounts[0]);
+            await contract.methods.depositUserOne('0x0', ONE_ETHER.toString()).send({
+                value: ONE_ETHER.toString(),
+                from: accounts[0],
+                gas: 5000000
+            });
 
             expect(await contract.methods.userOneAddress().call()).to.be.equal(account);
         });
@@ -44,7 +54,12 @@ describe('HeadTail', () => {
 
             const startingBalance = await getBalance(account);
 
-            await deployHeadTailContract(web3, accounts[0], '0x0', '777');
+            const contract = await deployHeadTailContract(web3, accounts[0]);
+            await contract.methods.depositUserOne('0x0', '777').send({
+                value: '777',
+                from: accounts[0],
+                gas: 5000000
+            });
 
             expect(await getBalanceAsString(account)).to.be.equal(
                 (startingBalance - BigInt(777)).toString()
@@ -57,7 +72,12 @@ describe('HeadTail', () => {
             const userOne = accounts[0];
             const userTwo = accounts[1];
 
-            const contract = await deployHeadTailContract(web3, accounts[0], '0x0');
+            const contract = await deployHeadTailContract(web3, accounts[0]);
+            await contract.methods.depositUserOne('0x0', ONE_ETHER.toString()).send({
+                value: ONE_ETHER.toString(),
+                from: accounts[0],
+                gas: 5000000
+            });
 
             expect(await contract.methods.userOneAddress().call()).to.be.equal(userOne);
 
@@ -81,14 +101,20 @@ describe('HeadTail', () => {
             const userOneChoice = true;
             const userOneChoiceSecret = '312d35asd454asddasddd2344124444444fyguijkfdr4';
 
+            const contract = await deployHeadTailContract(web3, userOne);
             const { signedChoiceHash } = await createChoiceSignature(
                 userOne,
                 userOneChoice,
                 userOneChoiceSecret,
+                parseInt(await contract.methods.getChainId().call(), 10),
+                contract.options.address,
                 web3
             );
-
-            const contract = await deployHeadTailContract(web3, userOne, signedChoiceHash);
+            await contract.methods.depositUserOne(signedChoiceHash, ONE_ETHER.toString()).send({
+                value: ONE_ETHER.toString(),
+                from: accounts[0],
+                gas: 5000000
+            });
 
             expect(await contract.methods.userOneAddress().call()).to.be.equal(userOne);
 

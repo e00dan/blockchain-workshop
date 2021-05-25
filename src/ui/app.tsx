@@ -1,10 +1,11 @@
 import { Amount } from '@lay2/pw-core';
 import React, { useEffect, useState } from 'react';
 import Web3 from 'web3';
-import { createChoiceSignature } from '../common';
+import { createChoiceSignature, domainSeparator } from '../common';
 import { HeadTailPolyjuice } from '../lib/contracts/HeadTail';
 import { initPWCore } from '../lib/portalwallet/pw';
 import './app.scss';
+
 // import PolyjuiceHttpProvider from '../lib/polyjuice/polyjuice_provider.min.js';
 
 async function createWeb3() {
@@ -39,7 +40,7 @@ async function createWeb3() {
 }
 
 const SUDT_IT = 1;
-const SECRET = '312d35asd454asddasddd2344124444444fyguijkfdr4';
+const SECRET = 'THIS_IS_SECRET';
 
 // true = head, false = tail
 type CHOICE_TYPE = boolean;
@@ -61,63 +62,54 @@ export function App() {
     const [secondUserAddress, setSecondUserAddress] = useState<string | undefined>();
     const [contractBalance, setContractBalance] = useState<bigint | undefined>();
     const [deployedContractDepositAmount, setDeployedContractDepositAmount] = useState<string>();
+    const [chainId, setChainId] = useState<number | undefined>();
 
     const account = accounts?.[0];
 
     async function deployContract() {
-        const { signedChoiceHash, choiceHash, v, r, s } = await createChoiceSignature(
+        // const { signedChoiceHash, choiceHash, v, r, s } = await createChoiceSignature(
+        //     account,
+        //     firstUserChoice,
+        //     SECRET,
+        //     web3
+        // );
+        // console.log({
+        //     signedChoiceHash,
+        //     choiceHash,
+        //     v,
+        //     r,
+        //     s
+        // });
+        // const _contract = new HeadTailPolyjuice(web3);
+        // await _contract.deploy(signedChoiceHash, depositAmount, godwokenAccountId);
+        // setContract(_contract);
+        // setDeployedContractDepositAmount(depositAmount);
+    }
+
+    async function verifySignature() {
+        // const web3Ethereum = new Web3((window as any).ethereum);
+
+        const { signedChoiceHash } = await createChoiceSignature(
             account,
             firstUserChoice,
             SECRET,
+            chainId,
+            contract.address, // @TODO contract address
             web3
         );
 
         console.log({
-            signedChoiceHash,
-            choiceHash,
-            v,
-            r,
-            s
+            domainSeparatorFromContract: await contract.contract.methods.domainSeparator().call(),
+            domainSeparatorFromJS: await domainSeparator(
+                'HeadTail',
+                '1',
+                chainId,
+                contract.address
+            ),
+            address: contract.address
         });
 
-        const _contract = new HeadTailPolyjuice(web3);
-        await _contract.deploy(signedChoiceHash, depositAmount, godwokenAccountId);
-
-        setContract(_contract);
-        setDeployedContractDepositAmount(depositAmount);
-    }
-
-    async function createChoiceHash() {
-        const data = await contract.createChoiceHash(secondUserChoice, SECRET, account);
-
-        console.log('createChoiceHash', {
-            data
-        });
-
-        return data;
-    }
-
-    async function verifySignature() {
-        const web3Ethereum = new Web3((window as any).ethereum);
-
-        const { signedChoiceHash, choiceHash, v, r, s } = await createChoiceSignature(
-            account,
-            firstUserChoice,
-            SECRET,
-            web3Ethereum
-        );
-
-        console.log({
-            signedChoiceHash,
-            choiceHash,
-            v,
-            r,
-            s
-        });
-
-        // const hash = await contract.createChoiceHash(secondUserChoice, SECRET, account);
-
-        const data = await contract.verify(choiceHash, signedChoiceHash, account);
+        const data = await contract.verify(firstUserChoice, SECRET, signedChoiceHash, account);
 
         console.log('verifySignature', {
             data
@@ -158,7 +150,7 @@ export function App() {
 
     async function getContractBalance(_contract = contract) {
         // const contractAccountId = await getAccountIdByEthAddress(_contract.contractAccountId);
-        setContractBalance(await getBalanceByEthAddress(SUDT_IT, _contract.contractAccountId));
+        // setContractBalance(await getBalanceByEthAddress(SUDT_IT, _contract.contractAccountId));
     }
 
     async function setExistingContractId(contractAccountId: string) {
@@ -170,24 +162,24 @@ export function App() {
         await getContractBalance(_contract);
         setFirstUserAddress(undefined);
         setSecondUserAddress(undefined);
+        setChainId(parseInt(await _contract.contract.methods.getChainId().call(), 10));
     }
 
     async function depositUserOne() {
         const web3Ethereum = new Web3((window as any).ethereum);
 
-        const { signedChoiceHash, choiceHash, v, r, s } = await createChoiceSignature(
+        const { signedChoiceHash, choiceHash } = await createChoiceSignature(
             account,
             firstUserChoice,
             SECRET,
+            chainId,
+            contract.address,
             web3Ethereum
         );
 
         console.log({
             signedChoiceHash,
-            choiceHash,
-            v,
-            r,
-            s
+            choiceHash
         });
 
         await contract.depositUserOne(signedChoiceHash, depositAmount, account);
@@ -239,13 +231,13 @@ export function App() {
                     {/* (L1 balance: {l1Balance?.toString() || <LoadingIndicator />}{' '} */}
                     {/* CKB) */}
                 </b>{' '}
-                | Your Godwoken account id:{' '}
+                |&nbsp;
                 <b>
-                    {godwokenAccountId || <LoadingIndicator />} (L2 balance:{' '}
-                    {l2Balance ? (l2Balance / 10n ** 8n).toString() : <LoadingIndicator />} CKB)
+                    L2 balance:{' '}
+                    {l2Balance ? (l2Balance / 10n ** 8n).toString() : <LoadingIndicator />} CKB
                 </b>
             </div>
-            Deployed contract address: <b>{contract?.contractAccountId}</b>{' '}
+            Deployed contract address: <b>{contract?.address}</b>{' '}
             {deployedContractDepositAmount && (
                 <> | Deposit amount: {deployedContractDepositAmount} Shannons</>
             )}
@@ -343,8 +335,7 @@ export function App() {
             <br />
             <br />
             <hr />
-            <button onClick={createChoiceHash}>Create choice hash</button>
-            <button onClick={verifySignature}>Verify signature</button>
+            <button onClick={verifySignature}>Test verifying signature</button>
             <hr />
             The above function submits the original encrypted choice to the smart-contract and the
             winner is selected based on the correctness of the second user guess. First user needs

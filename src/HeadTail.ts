@@ -1,7 +1,7 @@
 import Web3 from 'web3';
 import { bufferToHex } from 'ethereumjs-util';
 import { CONFIG } from './config';
-import { deployHeadTailContract, createChoiceSignature } from './common';
+import { deployHeadTailContract, createChoiceSignature, domainSeparator } from './common';
 
 const oneEther = BigInt(1 * 10 ** 18).toString();
 
@@ -22,34 +22,49 @@ const oneEther = BigInt(1 * 10 ** 18).toString();
         secret
     });
 
-    const { signedChoiceHash, choiceHash, v, r, s } = await createChoiceSignature(
+    const headTail = await deployHeadTailContract(web3, userOne);
+
+    const CHAIN_ID = parseInt(await headTail.methods.getChainId().call(), 10);
+
+    console.log({
+        domainSeparatorFromContract: await headTail.methods.domainSeparator().call(),
+        domainSeparatorFromJS: await domainSeparator(
+            'HeadTail',
+            '1',
+            CHAIN_ID,
+            headTail.options.address
+        )
+    });
+
+    const { signedChoiceHash, choiceHash } = await createChoiceSignature(
         userOne,
         choice,
         secret,
+        CHAIN_ID,
+        headTail.options.address,
         web3
     );
 
-    console.log({
-        signedChoiceHash,
-        choiceHash,
-        v,
-        r,
-        s
+    console.log(`deployed contract: ${headTail.options.address}`);
+
+    await headTail.methods.depositUserOne(signedChoiceHash, oneEther).send({
+        value: oneEther,
+        from: userOne,
+        gas: 5000000
     });
 
-    const headTail = await deployHeadTailContract(web3, userOne, signedChoiceHash);
+    console.log('deposit user one worked');
 
     await headTail.methods.depositUserTwo(false).send({
         value: oneEther,
         from: userTwo
     });
 
-    const addressRecoveredInJS = web3.eth.accounts.recover(
-        choiceHash,
-        `0x${v.toString(16)}`,
-        bufferToHex(r),
-        bufferToHex(s)
-    );
+    console.log('deposit user two worked');
+
+    const addressRecoveredInJS = await headTail.methods
+        .verify([choice, secret], signedChoiceHash)
+        .call();
 
     await headTail.methods.revealUserOneChoice(true, secret).send({
         from: userOne

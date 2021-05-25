@@ -1,54 +1,117 @@
+/* eslint-disable @typescript-eslint/camelcase */
 import Web3 from 'web3';
-import { fromRpcSig, toRpcSig } from 'ethereumjs-util';
-import { Hash, HexString } from '@ckb-lumos/base';
+import { toChecksumAddress } from 'ethereumjs-util';
+import { recoverTypedSignature_v4, TypedDataUtils } from 'eth-sig-util';
 import { HeadTail } from './types/HeadTail';
 import * as HeadTailJSON from '../build/contracts/HeadTail.json';
 
-const DEPOSIT_AMOUNT = BigInt(1 * 10 ** 18).toString();
+const EIP712Domain = [
+    { name: 'name', type: 'string' },
+    { name: 'version', type: 'string' },
+    { name: 'chainId', type: 'uint256' },
+    { name: 'verifyingContract', type: 'address' }
+];
 
-export async function deployHeadTailContract(
-    web3: Web3,
-    account: string,
-    choiceHash: string,
-    value: string = DEPOSIT_AMOUNT
-): Promise<HeadTail> {
+export async function deployHeadTailContract(web3: Web3, account: string): Promise<HeadTail> {
     const HeadTailContract: HeadTail = new web3.eth.Contract(HeadTailJSON.abi as any) as any;
 
     return (HeadTailContract.deploy({
         data: HeadTailJSON.bytecode,
-        arguments: [choiceHash, value]
+        arguments: ['HeadTail', '1']
     }).send({
         from: account,
-        value,
         gas: 6000000
     }) as any) as HeadTail;
 }
 
-export function createChoiceHash(choice: boolean, secret: string, web3: Web3) {
-    return web3.utils.soliditySha3(choice, secret);
+export async function domainSeparator(
+    name: string,
+    version: string,
+    chainId: number,
+    verifyingContract: string
+) {
+    return `0x${TypedDataUtils.hashStruct(
+        'EIP712Domain',
+        { name, version, chainId, verifyingContract },
+        { EIP712Domain }
+    ).toString('hex')}`;
 }
 
 export async function createChoiceSignature(
     accountAddress: string,
     choice: boolean,
     secret: string,
+    chainId: number,
+    verifyingContractAddress: string,
     web3: Web3
-) {
-    const choiceHash = createChoiceHash(choice, secret, web3);
+): Promise<any> {
+    const IS_GANACHE = !(web3.currentProvider as any).sendAsync;
 
-    const signed = await web3.eth.sign(choiceHash, accountAddress);
-
-    const { v, r, s } = fromRpcSig(signed);
-
-    const signedChoiceHash = toRpcSig(v, r, s);
-
-    return {
-        choiceHash,
-        signedChoiceHash,
-        v,
-        r,
-        s
+    const SIGNING_DATA = {
+        types: {
+            EIP712Domain,
+            Mail: [
+                { name: 'choice', type: 'bool' },
+                {
+                    name: 'secret',
+                    type: 'string'
+                }
+            ]
+        },
+        domain: {
+            name: 'HeadTail',
+            version: '1',
+            chainId,
+            verifyingContract: verifyingContractAddress
+        },
+        primaryType: 'Mail' as const,
+        message: {
+            choice,
+            secret
+        }
     };
+
+    const params = [accountAddress, IS_GANACHE ? SIGNING_DATA : JSON.stringify(SIGNING_DATA)];
+    const method = IS_GANACHE ? 'eth_signTypedData' : 'eth_signTypedData_v4';
+
+    if (IS_GANACHE) {
+        Web3.providers.HttpProvider.prototype.sendAsync =
+            Web3.providers.HttpProvider.prototype.send;
+    }
+    return new Promise(resolve => {
+        (web3.currentProvider as any).sendAsync(
+            {
+                method,
+                params,
+                accountAddress
+            },
+            function sendAsyncCallback(err: any, result: any) {
+                if (err) return console.dir(err);
+                if (result.error) {
+                    console.error(result.error.message);
+                }
+                if (result.error) return console.error('ERROR', result);
+                console.log(`TYPED SIGNED:${JSON.stringify(result.result)}`);
+
+                const recovered = recoverTypedSignature_v4({
+                    data: SIGNING_DATA,
+                    sig: result.result
+                });
+
+                if (toChecksumAddress(recovered) === toChecksumAddress(accountAddress)) {
+                    console.log(`Successfully recovered signer as ${accountAddress}`);
+                } else {
+                    console.log(
+                        `Failed to verify signer when comparing ${result} to ${accountAddress}`
+                    );
+                }
+
+                return resolve({
+                    signedChoiceHash: result.result
+                });
+            }
+        );
+    });
 }
 
 export async function getEthAccounts(): Promise<string[]> {
@@ -74,11 +137,4 @@ export async function currentEthAddress(): Promise<string> {
         currentAddress = await getCurrentEthAccount();
     }
     return currentAddress;
-}
-
-export async function sign(web3: Web3, message: HexString): Promise<HexString> {
-    // const account: string = await getCurrentEthAccount();
-    // console.log('SIGN using account:', account);
-
-    return '0x'.padEnd(132, '0');
 }
