@@ -8,9 +8,13 @@ const oneEther = BigInt(1 * 10 ** 18).toString();
 (async () => {
     const web3 = new Web3(CONFIG.WEB3_PROVIDER_URL);
 
+    const FALLBACK_ACCOUNT = web3.eth.accounts.wallet.add(
+        '0xd9066ff9f753a1898709b568119055660a77d9aae4d7a4ad677b8fb3d2a571e5'
+    );
+
     const accounts = await web3.eth.getAccounts();
 
-    const userOne = accounts[0];
+    const userOne = accounts[0] || FALLBACK_ACCOUNT.address;
     const userTwo = accounts[1];
 
     const choice = true;
@@ -24,7 +28,11 @@ const oneEther = BigInt(1 * 10 ** 18).toString();
 
     const headTail = await deployHeadTailContract(web3, userOne);
 
+    console.log(`deployed contract: ${headTail.options.address}`);
+
     const CHAIN_ID = parseInt(await headTail.methods.getChainId().call(), 10);
+
+    console.log(`chain id: ${CHAIN_ID}`);
 
     console.log({
         domainSeparatorFromContract: await headTail.methods.domainSeparator().call(),
@@ -44,8 +52,6 @@ const oneEther = BigInt(1 * 10 ** 18).toString();
         headTail.options.address,
         web3
     );
-
-    console.log(`deployed contract: ${headTail.options.address}`);
 
     await headTail.methods.depositUserOne(signedChoiceHash, oneEther).send({
         value: oneEther,

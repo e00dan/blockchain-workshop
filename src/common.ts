@@ -17,7 +17,7 @@ export async function deployHeadTailContract(web3: Web3, account: string): Promi
 
     return (HeadTailContract.deploy({
         data: HeadTailJSON.bytecode,
-        arguments: ['HeadTail', '1']
+        arguments: []
     }).send({
         from: account,
         gas: 6000000

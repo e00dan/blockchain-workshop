@@ -20,7 +20,7 @@ contract HeadTail is EIP712 {
         string secret;
     }
 
-    constructor(string memory name, string memory version) EIP712(name, version) {}
+    constructor() EIP712("HeadTail", "1") {}
 
     function depositUserOne(bytes memory _signedChoiceHash, uint128 _stake) public payable {
         require(
