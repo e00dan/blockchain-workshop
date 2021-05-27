@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/camelcase */
 import Web3 from 'web3';
-import { toChecksumAddress } from 'ethereumjs-util';
-import { recoverTypedSignature_v4, TypedDataUtils } from 'eth-sig-util';
+import { toBuffer, toChecksumAddress } from 'ethereumjs-util';
+import { recoverTypedSignature_v4, TypedDataUtils, signTypedData } from 'eth-sig-util';
 import { HeadTail } from './types/HeadTail';
 import * as HeadTailJSON from '../build/contracts/HeadTail.json';
 
@@ -20,7 +20,8 @@ export async function deployHeadTailContract(web3: Web3, account: string): Promi
         arguments: []
     }).send({
         from: account,
-        gas: 6000000
+        gas: 6000000,
+        gasPrice: '0'
     }) as any) as HeadTail;
 }
 
@@ -43,7 +44,8 @@ export async function createChoiceSignature(
     secret: string,
     chainId: number,
     verifyingContractAddress: string,
-    web3: Web3
+    web3: Web3,
+    privateKey?: string
 ): Promise<any> {
     const IS_GANACHE = !(web3.currentProvider as any).sendAsync;
 
@@ -74,6 +76,13 @@ export async function createChoiceSignature(
     const params = [accountAddress, IS_GANACHE ? SIGNING_DATA : JSON.stringify(SIGNING_DATA)];
     const method = IS_GANACHE ? 'eth_signTypedData' : 'eth_signTypedData_v4';
 
+    if (privateKey) {
+        const signedChoiceHash = signTypedData(toBuffer(privateKey), { data: SIGNING_DATA });
+
+        return {
+            signedChoiceHash
+        };
+    }
     if (IS_GANACHE) {
         Web3.providers.HttpProvider.prototype.sendAsync =
             Web3.providers.HttpProvider.prototype.send;
