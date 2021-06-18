@@ -20,7 +20,13 @@ contract HeadTail is EIP712 {
         string secret;
     }
 
-    constructor() EIP712("HeadTail", "1") {}
+    mapping(address => address) polyjuiceToEthereumAddressMapping;
+
+    constructor() EIP712('HeadTail', '1') {
+        polyjuiceToEthereumAddressMapping[
+            address(0xF49D0497a5Bb9888d76b60D39b38eda404000000)
+        ] = address(0xD173313A51f8fc37BcF67569b463abd89d81844f);
+    }
 
     function depositUserOne(bytes memory _signedChoiceHash, uint128 _stake) public payable {
         require(
@@ -54,7 +60,7 @@ contract HeadTail is EIP712 {
             'user two address has to be set before distributing prize'
         );
         require(
-            verify(Mail(choice, secret), userOneSignedChoiceHash) == userOneAddress,
+            verify(Mail(choice, secret), userOneSignedChoiceHash) == polyjuiceToEthereumAddressMapping[userOneAddress],
             'choice signature has to be correct'
         );
         require(address(this).balance == 2 * stake, 'prize has to be not been distributed yet');

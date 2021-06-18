@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-use-before-define */
 import { Amount } from '@lay2/pw-core';
 import React, { useEffect, useState } from 'react';
 import Web3 from 'web3';
@@ -7,6 +8,10 @@ import { initPWCore } from '../lib/portalwallet/pw';
 import './app.scss';
 
 // import PolyjuiceHttpProvider from '../lib/polyjuice/polyjuice_provider.min.js';
+
+const DEFAULT_CALL_OPTIONS = {
+    gasPrice: '0'
+};
 
 async function createWeb3() {
     // Modern dapp browsers...
@@ -56,7 +61,7 @@ export function App() {
     const [firstUserChoice, setFirstUserChoice] = useState<CHOICE_TYPE>(true);
     const [secondUserChoice, setSecondUserChoice] = useState<CHOICE_TYPE>(true);
     const [revealedChoice, setRevealedChoice] = useState<CHOICE_TYPE>(true);
-    const [depositAmount, setDepositAmount] = useState<string>('777');
+    const [depositAmount, setDepositAmount] = useState<string>('100000000');
     const [existingContractIdInputValue, setExistingContractIdInputValue] = useState<string>();
     const [firstUserAddress, setFirstUserAddress] = useState<string | undefined>();
     const [secondUserAddress, setSecondUserAddress] = useState<string | undefined>();
@@ -67,22 +72,10 @@ export function App() {
     const account = accounts?.[0];
 
     async function deployContract() {
-        // const { signedChoiceHash, choiceHash, v, r, s } = await createChoiceSignature(
-        //     account,
-        //     firstUserChoice,
-        //     SECRET,
-        //     web3
-        // );
-        // console.log({
-        //     signedChoiceHash,
-        //     choiceHash,
-        //     v,
-        //     r,
-        //     s
-        // });
-        // const _contract = new HeadTailPolyjuice(web3);
-        // await _contract.deploy(signedChoiceHash, depositAmount, godwokenAccountId);
-        // setContract(_contract);
+        const _contract = new HeadTailPolyjuice(web3);
+        await _contract.deploy(account);
+        setContract(_contract);
+        setExistingContractAddress(_contract.address);
         // setDeployedContractDepositAmount(depositAmount);
     }
 
@@ -153,16 +146,18 @@ export function App() {
         // setContractBalance(await getBalanceByEthAddress(SUDT_IT, _contract.contractAccountId));
     }
 
-    async function setExistingContractId(contractAccountId: string) {
+    async function setExistingContractAddress(contractAddress: string) {
         const _contract = new HeadTailPolyjuice(web3);
-        _contract.useDeployed(contractAccountId);
+        _contract.useDeployed(contractAddress);
 
         setContract(_contract);
         await getStake(_contract);
         await getContractBalance(_contract);
         setFirstUserAddress(undefined);
         setSecondUserAddress(undefined);
-        setChainId(parseInt(await _contract.contract.methods.getChainId().call(), 10));
+        setChainId(
+            parseInt(await _contract.contract.methods.getChainId().call(DEFAULT_CALL_OPTIONS), 10)
+        );
     }
 
     async function depositUserOne() {
@@ -273,7 +268,7 @@ export function App() {
             />
             <button
                 disabled={!existingContractIdInputValue || !l2Balance}
-                onClick={() => setExistingContractId(existingContractIdInputValue)}
+                onClick={() => setExistingContractAddress(existingContractIdInputValue)}
             >
                 Use existing contract
             </button>
@@ -325,7 +320,7 @@ export function App() {
             <p>Second user needs to be different than the user who created the bet.</p>
             <hr />
             <button onClick={revealUserOneChoice} disabled={!contract}>
-                Submit original choice and settle (as first user)
+                Submit original choice and settle
             </button>
             <select onChange={onRevealedChoiceChange} disabled={!contract}>
                 <option value="head">Head</option>

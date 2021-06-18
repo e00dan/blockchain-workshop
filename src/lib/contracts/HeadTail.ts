@@ -12,6 +12,13 @@ import * as HeadTailJSON from '../../../build/contracts/HeadTail.json';
 
 const DEPOSIT_AMOUNT = BigInt(1 * 10 ** 18).toString();
 
+const DEFAULT_CALL_OPTIONS = {
+    gasPrice: '0'
+};
+
+const DEFAULT_SEND_OPTIONS = {
+    gasPrice: '0'
+};
 export class HeadTailPolyjuice {
     web3: Web3;
 
@@ -48,6 +55,7 @@ export class HeadTailPolyjuice {
 
     async depositUserOne(choiceHash: string, value: string = DEPOSIT_AMOUNT, fromAddress: string) {
         const data = await this.contract.methods.depositUserOne(choiceHash, value).send({
+            ...DEFAULT_SEND_OPTIONS,
             from: fromAddress,
             value,
             gas: 5000000
@@ -58,6 +66,7 @@ export class HeadTailPolyjuice {
 
     async depositUserTwo(choice: boolean, value: string, fromAddress: string) {
         const data = await this.contract.methods.depositUserTwo(choice).send({
+            ...DEFAULT_SEND_OPTIONS,
             from: fromAddress,
             value,
             gas: 5000000
@@ -68,6 +77,7 @@ export class HeadTailPolyjuice {
 
     async verify(choice: boolean, secret: string, signedHash: string, fromAddress: string) {
         const data = await this.contract.methods.verify([choice, secret], signedHash).call({
+            ...DEFAULT_CALL_OPTIONS,
             from: fromAddress,
             gas: 5000000
         });
@@ -77,6 +87,7 @@ export class HeadTailPolyjuice {
 
     async revealUserOneChoice(choice: boolean, secret: string, fromAddress: string) {
         const data = await this.contract.methods.revealUserOneChoice(choice, secret).send({
+            ...DEFAULT_SEND_OPTIONS,
             from: fromAddress,
             gas: 5000000
         });
@@ -84,53 +95,25 @@ export class HeadTailPolyjuice {
         return data;
     }
 
-    async deploy(choiceHash: string, value: string = DEPOSIT_AMOUNT, fromAccountId: number) {
-        // const abiData = this.contract
-        //     .deploy({
-        //         data: HeadTailJSON.bytecode,
-        //         arguments: [choiceHash, value]
-        //     })
-        //     .encodeABI();
-        // const sudtId = 1;
-        // const creatorAccountId = 4;
-        // console.log('Deploy SimpleStorage Parmas:', {
-        //     sudtId,
-        //     creatorAccountId,
-        //     fromId: fromAccountId,
-        //     toId: 0,
-        //     value,
-        //     data: abiData
-        // });
-        // let deployResult: [RunResult, Hash, number] | undefined;
-        // try {
-        //     deployResult = await deployContract(
-        //         this.web3,
-        //         +sudtId,
-        //         +creatorAccountId,
-        //         fromAccountId,
-        //         BigInt(value),
-        //         abiData
-        //     );
-        // } catch (e) {
-        //     alert(e.message);
-        //     throw e;
-        // }
-        // const runResult: RunResult = deployResult![0];
-        // const deployedScriptHash = deployResult![1];
-        // this.contractAccountId = deployResult[2];
-        // const errorMessage: string | undefined = (runResult as any).message;
-        // if (errorMessage !== undefined && errorMessage !== null) {
-        //     alert(errorMessage);
-        // } else {
-        //     console.log(`Contract deployed.`, {
-        //         deployedScriptHash,
-        //         contractAccountId: this.contractAccountId
-        //     });
-        // }
+    async deploy(fromAddress: string) {
+        const _contract = (await (this.contract
+            .deploy({
+                data: HeadTailJSON.bytecode,
+                arguments: []
+            })
+            .send({
+                from: fromAddress,
+                gas: 6000000,
+                gasPrice: '0'
+            }) as any)) as HeadTail;
+
+        this.useDeployed(_contract.options.address);
+
+        return _contract;
     }
 
-    async useDeployed(contractAccountId: string) {
-        this.address = contractAccountId;
-        this.contract.options.address = contractAccountId;
+    useDeployed(contractAddress: string) {
+        this.address = contractAddress;
+        this.contract.options.address = contractAddress;
     }
 }

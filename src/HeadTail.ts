@@ -1,9 +1,11 @@
+/* eslint-disable @typescript-eslint/no-use-before-define */
 import Web3 from 'web3';
-import { bufferToHex } from 'ethereumjs-util';
 import { CONFIG } from './config';
 import { deployHeadTailContract, createChoiceSignature, domainSeparator } from './common';
 
 // const oneEther = BigInt(1 * 10 ** 18).toString();
+
+const ONLY_DEPLOY_AND_STOP = false;
 
 const BET_VALUE = BigInt(10 * 10 ** 8).toString(); // 10 CKB
 
@@ -18,23 +20,24 @@ const BET_VALUE = BigInt(10 * 10 ** 8).toString(); // 10 CKB
     const USER_ONE_ACCOUNT = web3.eth.accounts.wallet.add(USER_ONE_PRIVATE_KEY);
     const USER_TWO_ACCOUNT = web3.eth.accounts.wallet.add(USER_TWO_PRIVATE_KEY);
 
-    const userOne = USER_ONE_ACCOUNT.address;
-    const userTwo = USER_TWO_ACCOUNT.address;
+    const userOneEthAddress = USER_ONE_ACCOUNT.address;
+    const userTwoEthAddress = USER_TWO_ACCOUNT.address;
 
     const choice = true;
     const secret = 'THIS_IS_SECRET';
 
     console.log({
-        userOne,
+        userOneEthAddress,
         choice,
-        secret
+        secret,
+        betRequiredDeposit: formatBalance(BET_VALUE)
     });
 
     const DEFAULT_CALL_OPTIONS = {
         gasPrice: '0'
     };
 
-    const headTail = await deployHeadTailContract(web3, userOne);
+    const headTail = await deployHeadTailContract(web3, userOneEthAddress);
 
     console.log(`deployed contract: ${headTail.options.address}`);
 
@@ -42,7 +45,7 @@ const BET_VALUE = BigInt(10 * 10 ** 8).toString(); // 10 CKB
 
     console.log(`chain id: ${CHAIN_ID}`);
 
-    console.log({
+    console.log('ERC712 (typed signing) info', {
         domainSeparatorFromContract: await headTail.methods
             .domainSeparator()
             .call(DEFAULT_CALL_OPTIONS),
@@ -54,8 +57,12 @@ const BET_VALUE = BigInt(10 * 10 ** 8).toString(); // 10 CKB
         )
     });
 
+    if (ONLY_DEPLOY_AND_STOP) {
+        return;
+    }
+
     const { signedChoiceHash } = await createChoiceSignature(
-        userOne,
+        userOneEthAddress,
         choice,
         secret,
         CHAIN_ID,
@@ -64,23 +71,36 @@ const BET_VALUE = BigInt(10 * 10 ** 8).toString(); // 10 CKB
         USER_ONE_PRIVATE_KEY
     );
 
+    console.log(`user balances before bet:
+        1 = ${await getBalanceAndDisplayFormatted(userOneEthAddress, web3)}
+        2 = ${await getBalanceAndDisplayFormatted(userTwoEthAddress, web3)}
+    `);
+
     await headTail.methods.depositUserOne(signedChoiceHash, BET_VALUE).send({
         value: BET_VALUE,
-        from: userOne,
+        from: userOneEthAddress,
         gas: 5000000,
         gasPrice: '0'
     });
 
-    console.log('deposit user one worked');
+    console.log(
+        `deposit user one worked (choice=true), user one Polyjuice address: ${await headTail.methods
+            .userOneAddress()
+            .call(DEFAULT_CALL_OPTIONS)}`
+    );
 
     await headTail.methods.depositUserTwo(false).send({
         value: BET_VALUE,
-        from: userTwo,
+        from: userTwoEthAddress,
         gas: 5000000,
         gasPrice: '0'
     });
 
-    console.log('deposit user two worked');
+    console.log(
+        `deposit user two worked (choice=false), user two Polyjuice address: ${await headTail.methods
+            .userTwoAddress()
+            .call(DEFAULT_CALL_OPTIONS)}`
+    );
 
     const addressRecoveredInJS = await headTail.methods
         .verify([choice, secret], signedChoiceHash)
@@ -92,10 +112,27 @@ const BET_VALUE = BigInt(10 * 10 ** 8).toString(); // 10 CKB
     });
 
     await headTail.methods.revealUserOneChoice(true, secret).send({
-        from: userOne,
+        from: userOneEthAddress,
         gas: 5000000,
         gasPrice: '0'
     });
 
     console.log('bet settled successfully');
+
+    console.log(`user balances after bet:
+        1 = ${await getBalanceAndDisplayFormatted(userOneEthAddress, web3)}
+        2 = ${await getBalanceAndDisplayFormatted(userTwoEthAddress, web3)}
+    `);
 })();
+
+function formatBalance(balance: string) {
+    const formatted = (BigInt(balance) / BigInt(Math.pow(10, 8))).toString();
+
+    return `${formatted} CKB`;
+}
+
+async function getBalanceAndDisplayFormatted(ethAddress: string, web3: Web3) {
+    const rawBalance = await web3.eth.getBalance(ethAddress);
+
+    return formatBalance(rawBalance);
+}
