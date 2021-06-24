@@ -25,6 +25,15 @@ export async function deployHeadTailContract(web3: Web3, account: string): Promi
     }) as any) as HeadTail;
 }
 
+export async function useExistingHeadTailContract(web3: Web3, address: string): Promise<HeadTail> {
+    const HeadTailContract: HeadTail = new web3.eth.Contract(
+        HeadTailJSON.abi as any,
+        address
+    ) as any;
+
+    return HeadTailContract;
+}
+
 export async function domainSeparator(
     name: string,
     version: string,

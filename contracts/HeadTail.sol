@@ -24,7 +24,7 @@ contract HeadTail is EIP712 {
 
     constructor() EIP712('HeadTail', '1') {
         polyjuiceToEthereumAddressMapping[
-            address(0xF49D0497a5Bb9888d76b60D39b38eda404000000)
+            address(0xE5d1d328E2A48568C8A671685B2Ed08190BB5253)
         ] = address(0xD173313A51f8fc37BcF67569b463abd89d81844f);
     }
 

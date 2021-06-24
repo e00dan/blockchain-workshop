@@ -74,7 +74,7 @@ export function App() {
     async function deployContract() {
         const _contract = new HeadTailPolyjuice(web3);
         await _contract.deploy(account);
-        setContract(_contract);
+   
         setExistingContractAddress(_contract.address);
         // setDeployedContractDepositAmount(depositAmount);
     }
