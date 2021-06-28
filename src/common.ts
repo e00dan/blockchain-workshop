@@ -47,18 +47,13 @@ export async function domainSeparator(
     ).toString('hex')}`;
 }
 
-export async function createChoiceSignature(
-    accountAddress: string,
+function getSigningData(
     choice: boolean,
     secret: string,
     chainId: number,
-    verifyingContractAddress: string,
-    web3: Web3,
-    privateKey?: string
-): Promise<any> {
-    const IS_GANACHE = !(web3.currentProvider as any).sendAsync;
-
-    const SIGNING_DATA = {
+    verifyingContractAddress: string
+) {
+    return {
         types: {
             EIP712Domain,
             Mail: [
@@ -81,12 +76,25 @@ export async function createChoiceSignature(
             secret
         }
     };
+}
 
-    const params = [accountAddress, IS_GANACHE ? SIGNING_DATA : JSON.stringify(SIGNING_DATA)];
+export async function createChoiceSignature(
+    accountAddress: string,
+    choice: boolean,
+    secret: string,
+    chainId: number,
+    verifyingContractAddress: string,
+    web3: Web3,
+    privateKey?: string
+): Promise<any> {
+    const IS_GANACHE = !(web3.currentProvider as any).sendAsync;
+
+    const signingData = getSigningData(choice, secret, chainId, verifyingContractAddress);
+    const params = [accountAddress, IS_GANACHE ? signingData : JSON.stringify(signingData)];
     const method = IS_GANACHE ? 'eth_signTypedData' : 'eth_signTypedData_v4';
 
     if (privateKey) {
-        const signedChoiceHash = signTypedData(toBuffer(privateKey), { data: SIGNING_DATA });
+        const signedChoiceHash = signTypedData(toBuffer(privateKey), { data: signingData });
 
         return {
             signedChoiceHash
@@ -112,7 +120,7 @@ export async function createChoiceSignature(
                 console.log(`TYPED SIGNED:${JSON.stringify(result.result)}`);
 
                 const recovered = recoverTypedSignature_v4({
-                    data: SIGNING_DATA,
+                    data: signingData,
                     sig: result.result
                 });
 
@@ -130,6 +138,27 @@ export async function createChoiceSignature(
             }
         );
     });
+}
+
+export async function createChoiceSignaturePK(
+    choice: boolean,
+    secret: string,
+    chainId: number,
+    verifyingContractAddress: string,
+    privateKey?: string
+) {
+    if (!privateKey) {
+        throw new Error(
+            'Private key is required for creating choice signature using "createChoiceSignaturePK" method.'
+        );
+    }
+
+    const signingData = getSigningData(choice, secret, chainId, verifyingContractAddress);
+    const signedChoiceHash = signTypedData(toBuffer(privateKey), { data: signingData });
+
+    return {
+        signedChoiceHash
+    };
 }
 
 export async function getEthAccounts(): Promise<string[]> {
