@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import Web3 from 'web3';
 import PolyjuiceHttpProviderForNode from '@retric/test-provider/lib/cli';
-import { CONFIG } from './config';
+// import { CONFIG } from './config';
 import {
     deployHeadTailContract,
     createChoiceSignature,
@@ -16,7 +16,7 @@ const provider_config = {
     godwoken: {
         rollup_type_hash: '0x0a30665c3047d65cb3651eda93182a0d2f2087317aaba3ab35f3a970089ea9b4',
         eth_account_lock: {
-            code_hash: '0x075bf74f81f492a620dc29a6193b8d66d8d351e486992141efbfce7fda5862b5',
+            code_hash: '0x91aa4f374636b582a79a8d8badb2e2fc361a84f67f4507878fbe42e1087637c1',
             hash_type: 'type' as any
         }
     }
@@ -31,7 +31,11 @@ const USER_TWO_PRIVATE_KEY = '0xd9bc30dc17023fbb68fe3002e0ff9107b241544fd6d60863
 const userOneEthAddress = '0xD173313A51f8fc37BcF67569b463abd89d81844f';
 const userTwoEthAddress = '0xd46aC0Bc23dB5e8AfDAAB9Ad35E9A3bA05E092E8';
 
-(async () => {
+async function runDemo() {
+    // workaround to keep program alive
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    setInterval(() => {}, 1 << 30);
+
     const providerUserOne = new PolyjuiceHttpProviderForNode(
         godwoken_rpc_url,
         provider_config,
@@ -167,7 +171,9 @@ const userTwoEthAddress = '0xd46aC0Bc23dB5e8AfDAAB9Ad35E9A3bA05E092E8';
         1 = ${await getBalanceAndDisplayFormatted(userOneEthAddress, web3UserOne)}
         2 = ${await getBalanceAndDisplayFormatted(userTwoEthAddress, web3UserOne)}
     `);
-})();
+
+    process.exit();
+}
 
 function formatBalance(balance: string) {
     const formatted = (BigInt(balance) / BigInt(Math.pow(10, 8))).toString();
@@ -180,3 +186,7 @@ async function getBalanceAndDisplayFormatted(ethAddress: string, web3: Web3) {
 
     return formatBalance(rawBalance);
 }
+
+(async () => {
+    await runDemo();
+})();

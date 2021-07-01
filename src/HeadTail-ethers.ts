@@ -11,7 +11,7 @@ const providerConfig = {
     godwoken: {
         rollup_type_hash: '0x0a30665c3047d65cb3651eda93182a0d2f2087317aaba3ab35f3a970089ea9b4',
         eth_account_lock: {
-            code_hash: '0x075bf74f81f492a620dc29a6193b8d66d8d351e486992141efbfce7fda5862b5',
+            code_hash: '0x91aa4f374636b582a79a8d8badb2e2fc361a84f67f4507878fbe42e1087637c1',
             hash_type: 'type' as any
         }
     }
@@ -27,7 +27,7 @@ const userOneEthAddress = '0xD173313A51f8fc37BcF67569b463abd89d81844f';
 const userTwoEthAddress = '0xd46aC0Bc23dB5e8AfDAAB9Ad35E9A3bA05E092E8';
 
 (async () => {
-    const provider = new PolyjuiceJsonRpcProvider(godwokenRpcUrl);
+    const provider = new PolyjuiceJsonRpcProvider(providerConfig, [], godwokenRpcUrl);
     const walletUserOne = new PolyjuiceWallet(
         USER_ONE_PRIVATE_KEY,
         {

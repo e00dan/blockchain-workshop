@@ -1,34 +1,34 @@
+/* eslint-disable @typescript-eslint/camelcase */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import { Amount } from '@lay2/pw-core';
 import React, { useEffect, useState } from 'react';
 import Web3 from 'web3';
+import PolyjuiceHttpProvider from '@retric/test-provider';
 import { createChoiceSignature, domainSeparator } from '../common';
 import { HeadTailPolyjuice } from '../lib/contracts/HeadTail';
 import { initPWCore } from '../lib/portalwallet/pw';
 import './app.scss';
 
-// import PolyjuiceHttpProvider from '../lib/polyjuice/polyjuice_provider.min.js';
-
-const DEFAULT_CALL_OPTIONS = {
-    gasPrice: '0'
-};
+let DEFAULT_CALL_OPTIONS: any = {};
 
 async function createWeb3() {
     // Modern dapp browsers...
     if ((window as any).ethereum) {
-        // const godwoken_rpc_url = 'http://localhost:8024';
-        // const provider_config = {
-        //     godwoken: {
-        //         rollup_type_hash:
-        //             '0xf70aa98a96fba847185be1b58c1d1e3cae7ad91f971eecc5749799d5e72939f0',
-        //         eth_account_lock: {
-        //             code_hash: '0xeeb39042bd7a1907e35823438db35f0a67fd495464abd0d183220e1ee8dda009',
-        //             hash_type: 'type'
-        //         }
-        //     }
-        // };
-        // const provider = new PolyjuiceHttpProvider(godwoken_rpc_url, provider_config);
-        const web3 = new Web3(Web3.givenProvider);
+        const godwokenRpcUrl = 'http://localhost:8024';
+        const providerConfig = {
+            godwoken: {
+                rollup_type_hash:
+                    '0x0a30665c3047d65cb3651eda93182a0d2f2087317aaba3ab35f3a970089ea9b4',
+                eth_account_lock: {
+                    code_hash: '0x91aa4f374636b582a79a8d8badb2e2fc361a84f67f4507878fbe42e1087637c1',
+                    hash_type: 'type' as any
+                }
+            }
+        };
+
+        const provider = new PolyjuiceHttpProvider(godwokenRpcUrl, providerConfig);
+        const web3 = new Web3(provider || Web3.givenProvider);
 
         try {
             // Request account access if needed
@@ -70,11 +70,15 @@ export function App() {
     const [chainId, setChainId] = useState<number | undefined>();
 
     const account = accounts?.[0];
+    DEFAULT_CALL_OPTIONS = {
+        gasPrice: '0',
+        from: account
+    };
 
     async function deployContract() {
         const _contract = new HeadTailPolyjuice(web3);
         await _contract.deploy(account);
-   
+
         setExistingContractAddress(_contract.address);
         // setDeployedContractDepositAmount(depositAmount);
     }
