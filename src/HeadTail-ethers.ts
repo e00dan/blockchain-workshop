@@ -1,20 +1,16 @@
 /* eslint-disable @typescript-eslint/camelcase */
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import { ContractFactory, ethers } from 'ethers';
-import { PolyjuiceJsonRpcProvider } from '@retric/test-provider/lib/hardhat/providers';
-import PolyjuiceWallet from '@retric/test-provider/lib/hardhat/wallet-signer';
+import { PolyjuiceJsonRpcProvider, PolyjuiceWallet } from '@polyjuice-provider/ethers';
 import { domainSeparator, createChoiceSignaturePK } from './common';
 import * as HeadTailJSON from '../build/contracts/HeadTail.json';
+import { CONFIG } from './config';
 
-const godwokenRpcUrl = 'http://localhost:8024';
+const godwokenRpcUrl = CONFIG.WEB3_PROVIDER_URL;
 const providerConfig = {
-    godwoken: {
-        rollup_type_hash: '0x0a30665c3047d65cb3651eda93182a0d2f2087317aaba3ab35f3a970089ea9b4',
-        eth_account_lock: {
-            code_hash: '0x91aa4f374636b582a79a8d8badb2e2fc361a84f67f4507878fbe42e1087637c1',
-            hash_type: 'type' as any
-        }
-    }
+    rollupTypeHash: CONFIG.ROLLUP_TYPE_HASH,
+    ethAccountLockCodeHash: CONFIG.ETH_ACCOUNT_LOCK_CODE_HASH,
+    web3Url: godwokenRpcUrl
 };
 
 const ONLY_DEPLOY_AND_STOP = false;
@@ -27,23 +23,9 @@ const userOneEthAddress = '0xD173313A51f8fc37BcF67569b463abd89d81844f';
 const userTwoEthAddress = '0xd46aC0Bc23dB5e8AfDAAB9Ad35E9A3bA05E092E8';
 
 (async () => {
-    const provider = new PolyjuiceJsonRpcProvider(providerConfig, [], godwokenRpcUrl);
-    const walletUserOne = new PolyjuiceWallet(
-        USER_ONE_PRIVATE_KEY,
-        {
-            godwokerOption: providerConfig,
-            web3RpcUrl: godwokenRpcUrl
-        },
-        provider
-    );
-    const walletUserTwo = new PolyjuiceWallet(
-        USER_TWO_PRIVATE_KEY,
-        {
-            godwokerOption: providerConfig,
-            web3RpcUrl: godwokenRpcUrl
-        },
-        provider
-    );
+    const provider = new PolyjuiceJsonRpcProvider(providerConfig, godwokenRpcUrl);
+    const walletUserOne = new PolyjuiceWallet(USER_ONE_PRIVATE_KEY, providerConfig, provider);
+    const walletUserTwo = new PolyjuiceWallet(USER_TWO_PRIVATE_KEY, providerConfig, provider);
 
     const choice = true;
     const secret = 'THIS_IS_SECRET';

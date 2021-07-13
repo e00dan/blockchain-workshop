@@ -4,44 +4,40 @@
 import { Amount } from '@lay2/pw-core';
 import React, { useEffect, useState } from 'react';
 import Web3 from 'web3';
-import {
-    PolyjuiceHttpProvider
-} from '@polyjuice-provider/web3';
-import {
-    PolyjuiceJsonRpcProvider
-} from '@polyjuice-provider/ethers';
-import { providers, Signer } from 'ethers';
-
+import PolyjuiceHttpProvider from '@retric/test-provider';
 import { createChoiceSignature, domainSeparator } from '../common';
+import { HeadTailPolyjuice } from '../lib/contracts/HeadTail';
+import { initPWCore } from '../lib/portalwallet/pw';
 import './app.scss';
-import { HeadTailPolyjuiceEthers } from '../lib/contracts/HeadTail-ethers';
-import { CONFIG } from '../config';
 
-async function createWeb3(): Promise<[PolyjuiceJsonRpcProvider, Signer]> {
+let DEFAULT_CALL_OPTIONS: any = {};
+
+async function createWeb3() {
     // Modern dapp browsers...
     if ((window as any).ethereum) {
-        const godwokenRpcUrl = CONFIG.WEB3_PROVIDER_URL;
+        const godwokenRpcUrl = 'http://godwoken-testnet-web3-rpc.ckbapp.dev';
         const providerConfig = {
-            rollupTypeHash: CONFIG.ROLLUP_TYPE_HASH,
-            ethAccountLockCodeHash: CONFIG.ETH_ACCOUNT_LOCK_CODE_HASH,
-            web3Url: godwokenRpcUrl
+            godwoken: {
+                rollup_type_hash:
+                    '0x9b260161e003972c0b699939bc164cfdcfce7fd40eb9135835008dd7e09d3dae',
+                eth_account_lock: {
+                    code_hash: '0xfcf093a5f1df4037cea259d49df005e0e7258b4f63e67233eda5b376b7fd2290',
+                    hash_type: 'type' as any
+                }
+            }
         };
 
-        const web3Provider = new PolyjuiceHttpProvider(godwokenRpcUrl, providerConfig);
-        const rpc = new PolyjuiceJsonRpcProvider(providerConfig, godwokenRpcUrl);
-        const provider = new providers.Web3Provider(web3Provider)
-        let signer;
+        const provider = new PolyjuiceHttpProvider(godwokenRpcUrl, providerConfig);
+        const web3 = new Web3(provider || Web3.givenProvider);
 
         try {
             // Request account access if needed
             await (window as any).ethereum.enable();
-            signer = provider.getSigner((window as any).ethereum.selectedAddress);
-
         } catch (error) {
             // User denied account access...
         }
 
-        return [rpc, signer];
+        return web3;
     }
 
     console.log('Non-Ethereum browser detected. You should consider trying MetaMask!');
@@ -56,9 +52,8 @@ type CHOICE_TYPE = boolean;
 const EMPTY_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 export function App() {
-    const [web3, setWeb3] = useState<PolyjuiceJsonRpcProvider>(null);
-    const [signer, setSigner] = useState<Signer>(null);
-    const [contract, setContract] = useState<HeadTailPolyjuiceEthers>();
+    const [web3, setWeb3] = useState<Web3>(null);
+    const [contract, setContract] = useState<HeadTailPolyjuice>();
     const [accounts, setAccounts] = useState<string[]>();
     const [l1Balance, setL1Balance] = useState<Amount>();
     const [l2Balance, setL2Balance] = useState<bigint>();
@@ -75,17 +70,21 @@ export function App() {
     const [chainId, setChainId] = useState<number | undefined>();
 
     const account = accounts?.[0];
+    DEFAULT_CALL_OPTIONS = {
+        gasPrice: '0',
+        from: account
+    };
 
     async function deployContract() {
-        const _contract = new HeadTailPolyjuiceEthers(web3, signer);
-        await _contract.deploy();
+        const _contract = new HeadTailPolyjuice(web3);
+        await _contract.deploy(account);
 
         setExistingContractAddress(_contract.address);
         // setDeployedContractDepositAmount(depositAmount);
     }
 
     async function verifySignature() {
-        const web3Ethereum = new Web3((window as any).ethereum);
+        // const web3Ethereum = new Web3((window as any).ethereum);
 
         const { signedChoiceHash } = await createChoiceSignature(
             account,
@@ -93,11 +92,11 @@ export function App() {
             SECRET,
             chainId,
             contract.address, // @TODO contract address
-            web3Ethereum
+            web3
         );
 
         console.log({
-            domainSeparatorFromContract: await contract.contract.domainSeparator(),
+            domainSeparatorFromContract: await contract.contract.methods.domainSeparator().call(),
             domainSeparatorFromJS: await domainSeparator(
                 'HeadTail',
                 '1',
@@ -107,7 +106,7 @@ export function App() {
             address: contract.address
         });
 
-        const data = await contract.verify(firstUserChoice, SECRET, signedChoiceHash);
+        const data = await contract.verify(firstUserChoice, SECRET, signedChoiceHash, account);
 
         console.log('verifySignature', {
             data
@@ -117,19 +116,19 @@ export function App() {
     }
 
     async function getUserOneAddress() {
-        const value = await contract.getUserOneAddress();
+        const value = await contract.getUserOneAddress(account);
 
         setFirstUserAddress(value);
     }
 
     async function getUserTwoAddress() {
-        const value = await contract.getUserTwoAddress();
+        const value = await contract.getUserTwoAddress(account);
 
         setSecondUserAddress(value);
     }
 
-    async function getStake(_contract = contract) {
-        const value = await _contract.getStake();
+    async function getStake(_contract: HeadTailPolyjuice = contract) {
+        const value = await _contract.getStake(account);
 
         setDeployedContractDepositAmount(value.toString());
     }
@@ -152,7 +151,7 @@ export function App() {
     }
 
     async function setExistingContractAddress(contractAddress: string) {
-        const _contract = new HeadTailPolyjuiceEthers(web3, signer);
+        const _contract = new HeadTailPolyjuice(web3);
         _contract.useDeployed(contractAddress);
 
         setContract(_contract);
@@ -161,7 +160,7 @@ export function App() {
         setFirstUserAddress(undefined);
         setSecondUserAddress(undefined);
         setChainId(
-            parseInt(await _contract.contract.getChainId(), 10)
+            parseInt(await _contract.contract.methods.getChainId().call(DEFAULT_CALL_OPTIONS), 10)
         );
     }
 
@@ -182,11 +181,11 @@ export function App() {
             choiceHash
         });
 
-        await contract.depositUserOne(signedChoiceHash, depositAmount);
+        await contract.depositUserOne(signedChoiceHash, depositAmount, account);
     }
 
     async function guess() {
-        await contract.depositUserTwo(secondUserChoice, deployedContractDepositAmount);
+        await contract.depositUserTwo(secondUserChoice, deployedContractDepositAmount, account);
     }
 
     async function revealUserOneChoice() {
@@ -199,17 +198,21 @@ export function App() {
         }
 
         (async () => {
-            const [_web3, _signer] = await createWeb3();
+            const _web3 = await createWeb3();
             setWeb3(_web3);
-            setSigner(_signer);
 
             const _accounts = [(window as any).ethereum.selectedAddress];
             setAccounts(_accounts);
             console.log({ _accounts });
 
+            // const { pwcore, balance: _balance } = await initPWCore();
+            // console.log(pwcore);
+
+            // setL1Balance(_balance);
+
             if (_accounts && _accounts[0]) {
                 console.log('call eth.getBalance');
-                const _l2Balance = BigInt((await _web3.getBalance(_accounts[0])).toString());
+                const _l2Balance = BigInt(await _web3.eth.getBalance(_accounts[0]));
                 setL2Balance(_l2Balance);
                 console.log('l2 balance', { _l2Balance });
             }

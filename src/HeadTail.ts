@@ -11,12 +11,12 @@ import {
     useExistingHeadTailContract
 } from './common';
 
-const godwoken_rpc_url = 'http://localhost:8024';
+const godwoken_rpc_url = 'http://godwoken-testnet-web3-rpc.ckbapp.dev';
 const provider_config = {
     godwoken: {
-        rollup_type_hash: '0x0a30665c3047d65cb3651eda93182a0d2f2087317aaba3ab35f3a970089ea9b4',
+        rollup_type_hash: '0x9b260161e003972c0b699939bc164cfdcfce7fd40eb9135835008dd7e09d3dae',
         eth_account_lock: {
-            code_hash: '0x91aa4f374636b582a79a8d8badb2e2fc361a84f67f4507878fbe42e1087637c1',
+            code_hash: '0xfcf093a5f1df4037cea259d49df005e0e7258b4f63e67233eda5b376b7fd2290',
             hash_type: 'type' as any
         }
     }

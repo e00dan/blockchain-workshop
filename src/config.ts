@@ -1,4 +1,5 @@
 export const CONFIG = {
-    // WEB3_PROVIDER_URL: 'http://localhost:8545'
-    WEB3_PROVIDER_URL: 'http://localhost:8024'
+    WEB3_PROVIDER_URL: 'http://localhost:8024',
+    ROLLUP_TYPE_HASH: '0x0a30665c3047d65cb3651eda93182a0d2f2087317aaba3ab35f3a970089ea9b4',
+    ETH_ACCOUNT_LOCK_CODE_HASH: '0x91aa4f374636b582a79a8d8badb2e2fc361a84f67f4507878fbe42e1087637c1'
 };

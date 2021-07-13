@@ -110,6 +110,21 @@ contract HeadTail is EIP712 {
         return ECDSA.recover(digest, signature);
     }
 
+    function verifyUpdated(Mail memory mail, bytes memory signature, bytes32 codeHash) public returns (bytes32) {
+        bytes32 digest =
+            _hashTypedDataV4(
+                keccak256(
+                    abi.encode(
+                        keccak256('Mail(bool choice,string secret)'),
+                        mail.choice,
+                        keccak256(bytes(mail.secret))
+                    )
+                )
+            );
+
+        return recover(digest, signature, codeHash);
+    }
+
     function distributePrize(bool userOneChoice) private returns (bool) {
         if (userTwoChoice == userOneChoice) {
             userTwoAddress.transfer(2 * stake);
@@ -118,5 +133,17 @@ contract HeadTail is EIP712 {
         }
 
         return true;
+    }
+
+    function recover(bytes32 message, bytes memory signature, bytes32 codeHash) public returns (bytes32) {
+        bytes memory input = abi.encode(message, signature, codeHash);
+        bytes32[1] memory output;
+        assembly {
+            let len := mload(input)
+            if iszero(call(not(0), 0xf2, 0x0, add(input, 0x20), len, output, 288)) {
+                revert(0x0, 0x0)
+            }
+        }
+        return output[0];
     }
 }
