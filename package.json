@@ -25,7 +25,6 @@
     },
     "types": "dist/js/src/index.d.ts",
     "dependencies": {
-        "@polyjuice-provider/ethers": "0.0.1-rc5",
         "@polyjuice-provider/web3": "0.0.1-rc5",
         "nervos-godwoken-integration": "^0.0.2",
         "react-toastify": "^7.0.4",
