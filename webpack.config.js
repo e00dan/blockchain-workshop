@@ -39,7 +39,8 @@ module.exports = {
             https: require.resolve('https-browserify'),
             os: require.resolve('os-browserify/browser'),
             process: require.resolve('process/browser'),
-            stream: require.resolve('stream-browserify')
+            stream: require.resolve('stream-browserify'),
+            vm: require.resolve('vm-browserify')
         }
     },
 
