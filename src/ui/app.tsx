@@ -6,24 +6,13 @@ import Web3 from 'web3';
 import { ToastContainer, toast } from 'react-toastify';
 import './app.scss';
 import 'react-toastify/dist/ReactToastify.css';
-import { PolyjuiceHttpProvider } from '@polyjuice-provider/web3';
-import { AddressTranslator } from 'nervos-godwoken-integration';
 
 import { SimpleStorageWrapper } from '../lib/contracts/SimpleStorageWrapper';
-import { CONFIG } from '../config';
 
 async function createWeb3() {
     // Modern dapp browsers...
     if ((window as any).ethereum) {
-        const godwokenRpcUrl = CONFIG.WEB3_PROVIDER_URL;
-        const providerConfig = {
-            rollupTypeHash: CONFIG.ROLLUP_TYPE_HASH,
-            ethAccountLockCodeHash: CONFIG.ETH_ACCOUNT_LOCK_CODE_HASH,
-            web3Url: godwokenRpcUrl
-        };
-
-        const provider = new PolyjuiceHttpProvider(godwokenRpcUrl, providerConfig);
-        const web3 = new Web3(provider || Web3.givenProvider);
+        const web3 = new Web3((window as any).ethereum);
 
         try {
             // Request account access if needed
@@ -43,25 +32,14 @@ export function App() {
     const [web3, setWeb3] = useState<Web3>(null);
     const [contract, setContract] = useState<SimpleStorageWrapper>();
     const [accounts, setAccounts] = useState<string[]>();
-    const [l2Balance, setL2Balance] = useState<bigint>();
+    const [balance, setBalance] = useState<bigint>();
     const [existingContractIdInputValue, setExistingContractIdInputValue] = useState<string>();
     const [storedValue, setStoredValue] = useState<number | undefined>();
-    const [deployTxHash, setDeployTxHash] = useState<string | undefined>();
-    const [polyjuiceAddress, setPolyjuiceAddress] = useState<string | undefined>();
     const [transactionInProgress, setTransactionInProgress] = useState(false);
     const toastId = React.useRef(null);
     const [newStoredNumberInputValue, setNewStoredNumberInputValue] = useState<
         number | undefined
     >();
-
-    useEffect(() => {
-        if (accounts?.[0]) {
-            const addressTranslator = new AddressTranslator();
-            setPolyjuiceAddress(addressTranslator.ethAddressToGodwokenShortAddress(accounts?.[0]));
-        } else {
-            setPolyjuiceAddress(undefined);
-        }
-    }, [accounts?.[0]]);
 
     useEffect(() => {
         if (transactionInProgress && !toastId.current) {
@@ -90,12 +68,10 @@ export function App() {
         const _contract = new SimpleStorageWrapper(web3);
 
         try {
-            setDeployTxHash(undefined);
             setTransactionInProgress(true);
 
-            const transactionHash = await _contract.deploy(account);
+            await _contract.deploy(account);
 
-            setDeployTxHash(transactionHash);
             setExistingContractAddress(_contract.address);
             toast(
                 'Successfully deployed a smart-contract. You can now proceed to get or set the value in a smart contract.',
@@ -155,7 +131,7 @@ export function App() {
 
             if (_accounts && _accounts[0]) {
                 const _l2Balance = BigInt(await _web3.eth.getBalance(_accounts[0]));
-                setL2Balance(_l2Balance);
+                setBalance(_l2Balance);
             }
         })();
     });
@@ -167,15 +143,10 @@ export function App() {
             Your ETH address: <b>{accounts?.[0]}</b>
             <br />
             <br />
-            Your Polyjuice address: <b>{polyjuiceAddress || ' - '}</b>
-            <br />
-            <br />
-            Nervos Layer 2 balance:{' '}
-            <b>{l2Balance ? (l2Balance / 10n ** 8n).toString() : <LoadingIndicator />} CKB</b>
+            Balance: <b>{balance ? (balance / 10n ** 8n).toString() : <LoadingIndicator />} ETH</b>
             <br />
             <br />
             Deployed contract address: <b>{contract?.address || '-'}</b> <br />
-            Deploy transaction hash: <b>{deployTxHash || '-'}</b>
             <br />
             <hr />
             <p>
@@ -185,7 +156,7 @@ export function App() {
                 read stored value from smart contract or set a new one. You can do that using the
                 interface below.
             </p>
-            <button onClick={deployContract} disabled={!l2Balance}>
+            <button onClick={deployContract} disabled={!balance}>
                 Deploy contract
             </button>
             &nbsp;or&nbsp;
@@ -194,7 +165,7 @@ export function App() {
                 onChange={e => setExistingContractIdInputValue(e.target.value)}
             />
             <button
-                disabled={!existingContractIdInputValue || !l2Balance}
+                disabled={!existingContractIdInputValue || !balance}
                 onClick={() => setExistingContractAddress(existingContractIdInputValue)}
             >
                 Use existing contract
@@ -219,8 +190,6 @@ export function App() {
             <br />
             <br />
             <hr />
-            The contract is deployed on Nervos Layer 2 - Godwoken + Polyjuice. After each
-            transaction you might need to wait up to 120 seconds for the status to be reflected.
             <ToastContainer />
         </div>
     );

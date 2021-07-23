@@ -2,11 +2,6 @@ import Web3 from 'web3';
 import * as SimpleStorageJSON from '../../../build/contracts/SimpleStorage.json';
 import { SimpleStorage } from '../../types/SimpleStorage';
 
-const DEFAULT_SEND_OPTIONS = {
-    gas: 6000000,
-    gasPrice: '0'
-};
-
 export class SimpleStorageWrapper {
     web3: Web3;
 
@@ -31,29 +26,23 @@ export class SimpleStorageWrapper {
 
     async setStoredValue(value: number, fromAddress: string) {
         const tx = await this.contract.methods.set(value).send({
-            ...DEFAULT_SEND_OPTIONS,
-            from: fromAddress,
-            value
+            from: fromAddress
         });
 
         return tx;
     }
 
     async deploy(fromAddress: string) {
-        const deployTx = await (this.contract
+        const contract = await (this.contract
             .deploy({
                 data: SimpleStorageJSON.bytecode,
                 arguments: []
             })
             .send({
-                ...DEFAULT_SEND_OPTIONS,
-                from: fromAddress,
-                to: '0x0000000000000000000000000000000000000000'
+                from: fromAddress
             } as any) as any);
 
-        this.useDeployed(deployTx.contractAddress);
-
-        return deployTx.transactionHash;
+        this.useDeployed(contract._address);
     }
 
     useDeployed(contractAddress: string) {
