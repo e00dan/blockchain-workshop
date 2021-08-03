@@ -569,6 +569,24 @@
     immutable "^4.0.0-rc.12"
     js-xxhash "^1.0.4"
 
+"@ckb-lumos/config-manager@^0.16.0":
+  version "0.16.0"
+  resolved "https://registry.yarnpkg.com/@ckb-lumos/config-manager/-/config-manager-0.16.0.tgz#ddff6bf76f9f7b50f5005f8f45120cffc40f1e3e"
+  integrity sha512-NoctI6I1/SsVxzuwIbl4Qy4CCtmGPQxxTQr53zI5Jo3UAngrlVpj+fDWOjhAcR8r1U7IZRttJmNeye06JU6I/w==
+  dependencies:
+    deep-freeze-strict "^1.1.1"
+
+"@ckb-lumos/helpers@^0.16.0":
+  version "0.16.0"
+  resolved "https://registry.yarnpkg.com/@ckb-lumos/helpers/-/helpers-0.16.0.tgz#044e5581ae1e45244881dd011791622135c28374"
+  integrity sha512-FYNQTHEfkjHmwXetznWrkodXrBAo+Thqp7G4wMU9RkipAUHUxUxBF93+lhKprSUR1jfEmZrIsjikYvLGYGgiFQ==
+  dependencies:
+    "@ckb-lumos/base" "^0.16.0"
+    "@ckb-lumos/config-manager" "^0.16.0"
+    bech32 "^1.1.4"
+    ckb-js-toolkit "^0.10.2"
+    immutable "^4.0.0-rc.12"
+
 "@discoveryjs/json-ext@^0.5.0":
   version "0.5.2"
   resolved "https://registry.yarnpkg.com/@discoveryjs/json-ext/-/json-ext-0.5.2.tgz#8f03a22a04de437254e8ce8cc84ba39689288752"
@@ -1485,13 +1503,13 @@
     "@nodelib/fs.scandir" "2.1.4"
     fastq "^1.6.0"
 
-"@polyjuice-provider/base@0.0.1-rc5":
-  version "0.0.1-rc5"
-  resolved "https://registry.yarnpkg.com/@polyjuice-provider/base/-/base-0.0.1-rc5.tgz#17c68770860106ff9525919e73357aa84bdb34df"
-  integrity sha512-qCnCJbUnfxIpCmnkuEffsTxp2MfpvqEQhX/okjQAOWfg5qsbDRmPe63/ELUvHLtk+4epDcSUcuaGoxNLqPDqyQ==
+"@polyjuice-provider/base@0.0.1-rc6":
+  version "0.0.1-rc6"
+  resolved "https://registry.yarnpkg.com/@polyjuice-provider/base/-/base-0.0.1-rc6.tgz#7b9193802caa4cb1e2d18ba8293ce471508830ae"
+  integrity sha512-cXygyvsOFBxW402QaZM5YoHRX6+mKsI4qz42j06b+/IWOT9cHx1AIdDpOWhtwGf0uZq/9D5hDcxZDCL4fxRnTw==
   dependencies:
     "@ckb-lumos/base" "^0.16.0"
-    "@polyjuice-provider/godwoken" "^0.0.1-rc5"
+    "@polyjuice-provider/godwoken" "^0.0.1-rc6"
     buffer "^6.0.3"
     encoding "^0.1.13"
     eth-sig-util "^3.0.1"
@@ -1500,22 +1518,22 @@
     web3 "^1.3.4"
     xhr2-cookies "^1.1.0"
 
-"@polyjuice-provider/godwoken@^0.0.1-rc5":
-  version "0.0.1-rc5"
-  resolved "https://registry.yarnpkg.com/@polyjuice-provider/godwoken/-/godwoken-0.0.1-rc5.tgz#75d48ad354eede4b7ada7b7f5a231eb15f08761e"
-  integrity sha512-RjxEI9KSYF5lY/CJMMlj2m8xa+7krkh2kRNX/zrz9l2xwB4Q7dP1eBiM//P/3vWH/XnbVbH5g8g08g7mY1KSUg==
+"@polyjuice-provider/godwoken@^0.0.1-rc6":
+  version "0.0.1-rc6"
+  resolved "https://registry.yarnpkg.com/@polyjuice-provider/godwoken/-/godwoken-0.0.1-rc6.tgz#7a88a38fd3665d2cabf5faa800b27d18a713c572"
+  integrity sha512-IjtnqKKefiDFnBumZC76YZu6mX8vV95rwrCCtbtDPk5mXJaHx4Th7NnFwrEayU/Ms7m12RDAEbs4TP9qd5Nxlg==
   dependencies:
     "@ckb-lumos/base" "^0.16.0"
     ckb-js-toolkit "^0.9.3"
     immutable "^4.0.0-rc.12"
     keccak256 "^1.0.2"
 
-"@polyjuice-provider/web3@0.0.1-rc5":
-  version "0.0.1-rc5"
-  resolved "https://registry.yarnpkg.com/@polyjuice-provider/web3/-/web3-0.0.1-rc5.tgz#f73c52488e336c3f197c3f7e548da8dfa8a19709"
-  integrity sha512-P0XWptxnT2MkOz6XuWL8n+J7vOa47MSZD7RAVx92IfMrJiaK4XOlkk45xU364paeBaRIevj6WDMkmhpNfc2Rbg==
+"@polyjuice-provider/web3@0.0.1-rc6":
+  version "0.0.1-rc6"
+  resolved "https://registry.yarnpkg.com/@polyjuice-provider/web3/-/web3-0.0.1-rc6.tgz#280ca03dd0caa8a93b82ca8ad904656ece99537e"
+  integrity sha512-edHAupXCNTMReP5c1ZOPMCNQfo/KsZfuWib3pn1rJ28mE609GWUjyHWb72k23cjovI9KYWN5fD2PTCO0hZ2MqQ==
   dependencies:
-    "@polyjuice-provider/base" "0.0.1-rc5"
+    "@polyjuice-provider/base" "0.0.1-rc6"
     buffer "^6.0.3"
     encoding "^0.1.13"
     web3 "^1.4.0"
@@ -4596,6 +4614,11 @@ deep-extend@^0.6.0:
   version "0.6.0"
   resolved "https://registry.yarnpkg.com/deep-extend/-/deep-extend-0.6.0.tgz#c4fa7c95404a17a9c3e8ca7e1537312b736330ac"
   integrity sha512-LOHxIOaPYdHlJRtCQfDIVZtfw/ufM8+rVj649RIHzcm/vGwQRXFt6OPqIFWsm2XEMrNIEtWR64sY1LEKD2vAOA==
+
+deep-freeze-strict@^1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/deep-freeze-strict/-/deep-freeze-strict-1.1.1.tgz#77d0583ca24a69be4bbd9ac2fae415d55523e5b0"
+  integrity sha1-d9BYPKJKab5LvZrC+uQV1VUj5bA=
 
 deep-is@~0.1.3:
   version "0.1.3"
@@ -9263,12 +9286,13 @@ neo-async@^2.6.2:
   resolved "https://registry.yarnpkg.com/neo-async/-/neo-async-2.6.2.tgz#b4aafb93e3aeb2d8174ca53cf163ab7d7308305f"
   integrity sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==
 
-nervos-godwoken-integration@^0.0.2:
-  version "0.0.2"
-  resolved "https://registry.yarnpkg.com/nervos-godwoken-integration/-/nervos-godwoken-integration-0.0.2.tgz#47089c742809cf2ced466aecfbb056c22ac44be5"
-  integrity sha512-6HuJRyNgFAtqfJVd1wyYgrAv42/0rROXen8oi6jdIx3ECnzOS/mB/iRwao7yzF5DTL2IvTAoKWfrjewIuTTIkA==
+nervos-godwoken-integration@0.0.6:
+  version "0.0.6"
+  resolved "https://registry.yarnpkg.com/nervos-godwoken-integration/-/nervos-godwoken-integration-0.0.6.tgz#9721f1c4ea50e0a1dfb0a722b9dc242dce0e5e9c"
+  integrity sha512-+fC+zZfufzE5Txao6C94V5nSrpzvEwWYrUPwe/fOCrfsrdelHMASCZs+Alv4h9AnZdpZ/OerNCjK+LwQm6SBSg==
   dependencies:
     "@ckb-lumos/base" "^0.16.0"
+    "@ckb-lumos/helpers" "^0.16.0"
     "@lay2/pw-core" "0.4.0-alpha.9"
     "@nervosnetwork/ckb-types" "^0.39.0"
     ckb-js-toolkit "^0.10.2"
