@@ -3,8 +3,7 @@ import * as SimpleStorageJSON from '../../../build/contracts/SimpleStorage.json'
 import { SimpleStorage } from '../../types/SimpleStorage';
 
 const DEFAULT_SEND_OPTIONS = {
-    gas: 6000000,
-    gasPrice: '0'
+    gas: 6000000
 };
 
 export class SimpleStorageWrapper {

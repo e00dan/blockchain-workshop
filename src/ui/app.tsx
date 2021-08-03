@@ -103,7 +103,9 @@ export function App() {
             );
         } catch (error) {
             console.error(error);
-            toast('There was an error sending your transaction. Please check developer console.');
+            toast.error(
+                'There was an error sending your transaction. Please check developer console.'
+            );
         } finally {
             setTransactionInProgress(false);
         }
@@ -134,7 +136,9 @@ export function App() {
             );
         } catch (error) {
             console.error(error);
-            toast('There was an error sending your transaction. Please check developer console.');
+            toast.error(
+                'There was an error sending your transaction. Please check developer console.'
+            );
         } finally {
             setTransactionInProgress(false);
         }
