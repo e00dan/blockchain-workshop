@@ -11,7 +11,7 @@ import {
     useExistingHeadTailContract
 } from './common';
 
-const godwoken_rpc_url = 'http://godwoken-testnet-web3-rpc.ckbapp.dev';
+const godwoken_rpc_url = 'https://godwoken-testnet-web3-rpc.ckbapp.dev';
 const provider_config = {
     godwoken: {
         rollup_type_hash: '0x9b260161e003972c0b699939bc164cfdcfce7fd40eb9135835008dd7e09d3dae',

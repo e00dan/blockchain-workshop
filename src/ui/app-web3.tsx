@@ -15,7 +15,7 @@ let DEFAULT_CALL_OPTIONS: any = {};
 async function createWeb3() {
     // Modern dapp browsers...
     if ((window as any).ethereum) {
-        const godwokenRpcUrl = 'http://godwoken-testnet-web3-rpc.ckbapp.dev';
+        const godwokenRpcUrl = 'https://godwoken-testnet-web3-rpc.ckbapp.dev';
         const providerConfig = {
             godwoken: {
                 rollup_type_hash:
