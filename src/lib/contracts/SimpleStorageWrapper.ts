@@ -33,16 +33,16 @@ export class SimpleStorageWrapper {
     }
 
     async deploy(fromAddress: string) {
-        const contract = await (this.contract
+        const contract = await this.contract
             .deploy({
                 data: SimpleStorageJSON.bytecode,
                 arguments: []
             })
             .send({
                 from: fromAddress
-            } as any) as any);
+            });
 
-        this.useDeployed(contract._address);
+        this.useDeployed(contract.options.address);
     }
 
     useDeployed(contractAddress: string) {
