@@ -39,20 +39,26 @@ export class SimpleStorageWrapper {
     }
 
     async deploy(fromAddress: string) {
-        const deployTx = await (this.contract
+        const tx = this.contract
             .deploy({
                 data: SimpleStorageJSON.bytecode,
                 arguments: []
             })
             .send({
                 ...DEFAULT_SEND_OPTIONS,
-                from: fromAddress,
-                to: '0x0000000000000000000000000000000000000000'
-            } as any) as any);
+                from: fromAddress
+            });
 
-        this.useDeployed(deployTx.contractAddress);
+        let transactionHash: string = null;
+        tx.on('transactionHash', (hash: string) => {
+            transactionHash = hash;
+        });
 
-        return deployTx.transactionHash;
+        const contract = await tx;
+
+        this.useDeployed(contract.options.address);
+
+        return transactionHash;
     }
 
     useDeployed(contractAddress: string) {
