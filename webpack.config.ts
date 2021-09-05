@@ -1,14 +1,23 @@
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const path = require('path');
-const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+/* eslint-disable spaced-comment */
+/// <reference types="@types/node" />
+/// <reference types="@types/webpack-dev-server" />
+import HtmlWebpackPlugin from 'html-webpack-plugin';
+import { join } from 'path';
+import { ProvidePlugin, Configuration } from 'webpack';
+import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
 
-module.exports = {
+const config: Configuration = {
+    mode: 'development',
     entry: './src/ui/index.tsx',
     output: {
         filename: 'bundle.js',
-        path: path.join(__dirname, '/../dist')
+        path: join(__dirname, '/../dist')
     },
-    mode: 'development',
+    devServer: {
+        port: 3000,
+        compress: true,
+        historyApiFallback: true
+    },
     devtool: 'source-map',
     plugins: [
         new ForkTsCheckerWebpackPlugin(),
@@ -17,20 +26,16 @@ module.exports = {
             meta: {
                 viewport: 'width=device-width, initial-scale=1, shrink-to-fit=no'
             }
+        }),
+        new ProvidePlugin({
+            Buffer: ['buffer', 'Buffer'],
+            // http: 'stream-http',
+            // https: 'https-browserify',
+            // os: 'os-browserify/browser',
+            process: 'process/browser'
+            // vm: 'vm-browserify'
         })
     ],
-
-    resolve: {
-        // Add '.ts' and '.tsx' as resolvable extensions.
-        extensions: ['.ts', '.tsx', '.js', '.json']
-    },
-
-    devServer: {
-        port: 3000,
-        compress: true,
-        historyApiFallback: true
-    },
-
     module: {
         rules: [
             {
@@ -73,8 +78,21 @@ module.exports = {
             }
         ]
     },
-
-    node: {
-        fs: 'empty'
+    resolve: {
+        // Add '.ts' and '.tsx' as resolvable extensions.
+        extensions: ['.ts', '.tsx', '.js', '.json'],
+        fallback: {
+            assert: require.resolve('assert'),
+            crypto: require.resolve('crypto-browserify'),
+            fs: false,
+            http: require.resolve('stream-http'),
+            https: require.resolve('https-browserify'),
+            os: require.resolve('os-browserify/browser'),
+            process: require.resolve('process/browser'),
+            stream: require.resolve('stream-browserify'),
+            vm: require.resolve('vm-browserify')
+        }
     }
 };
+
+export default config;

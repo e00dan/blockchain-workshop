@@ -1,5 +1,14 @@
 # Blockchain workshop
 
+*If you're looking for Nervos Layer 2 example application check [#godwoken](https://github.com/Kuzirashi/blockchain-workshop/tree/godwoken) branch.*
+
+## Requirements
+
+1. Docker - required for compilation of smart contracts
+2. Node.js version `>= 14`
+
+## Install and run
+
 Install:
 ```
 yarn
@@ -14,7 +23,7 @@ yarn build
 yarn compile
 
 // TypeScript only
-yarn build:types && yarn build:ts
+yarn build:ts
 ```
 
 Start `src/HeadTail.ts`:
@@ -35,6 +44,8 @@ yarn start:ganache
 
 ## Overview
 
+Caution: Outdated diagram
+
 ![Diagram](diagram.png?raw=true "Architecture")
 
 ## Stages
@@ -49,4 +60,6 @@ yarn start:ganache
 | [stage-4](https://github.com/Kuzirashi/blockchain-workshop/tree/stage-4) | ![](https://api.travis-ci.com/Kuzirashi/blockchain-workshop.svg?branch=stage-4) | Add prize distribution function, sends ETH after a correct guess |
 | [stage-5](https://github.com/Kuzirashi/blockchain-workshop/tree/stage-5) | ![](https://api.travis-ci.com/Kuzirashi/blockchain-workshop.svg?branch=stage-5) | Encrypt user one choice with secret |
 
-Authored by [Daniel Kmak](https://www.linkedin.com/in/kmakdaniel/).
+## Slides
+
+- Polish version: https://drive.google.com/open?id=1nGIvaI70fv-zqX3EsXHxZfhqX9QGQdylCdpFZsvwPnM
