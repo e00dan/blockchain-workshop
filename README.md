@@ -1,6 +1,6 @@
 # Blockchain workshop
 
-*If you're looking for Nervos Layer 2 example application check [#godwoken](/tree/godwoken) branch.*
+*If you're looking for Nervos Layer 2 example application check [#godwoken](https://github.com/Kuzirashi/blockchain-workshop/tree/godwoken) branch.*
 
 ## Requirements
 
