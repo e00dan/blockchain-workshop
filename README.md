@@ -1,5 +1,14 @@
 # Blockchain workshop
 
+*If you're looking for Nervos Layer 2 example application check [#godwoken](/tree/godwoken) branch.*
+
+## Requirements
+
+1. Docker - required for compilation of smart contracts
+2. Node.js version `>= 14`
+
+## Install and run
+
 Install:
 ```
 yarn
@@ -52,7 +61,3 @@ yarn start:ganache
 ## Slides
 
 - Polish version: https://drive.google.com/open?id=1nGIvaI70fv-zqX3EsXHxZfhqX9QGQdylCdpFZsvwPnM
-
-## Credits
-
-Authored by [Daniel Kmak](https://www.linkedin.com/in/kmakdaniel/).

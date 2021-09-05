@@ -1,9 +1,9 @@
-pragma solidity 0.6.1;
+pragma solidity 0.8.7;
 
 contract HeadTail {
     uint public counter;
 
-    constructor() public {
+    constructor() {
         counter = 1;
     }
 
