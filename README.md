@@ -44,6 +44,8 @@ yarn start:ganache
 
 ## Overview
 
+Caution: Outdated diagram
+
 ![Diagram](diagram.png?raw=true "Architecture")
 
 ## Stages
