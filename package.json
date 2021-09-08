@@ -1,80 +1,51 @@
 {
-    "name": "blockchain-workshop",
-    "description": "",
-    "license": "MIT",
-    "author": "",
-    "homepage": "",
-    "version": "0.0.1",
-    "main": "",
-    "files": [
-        "dist/js/build",
-        "dist/js/src"
+  "name": "blockchain-workshop",
+  "version": "0.0.1",
+  "license": "MIT",
+  "dependencies": {
+    "@polyjuice-provider/web3": "^0.0.1-rc10",
+    "@testing-library/jest-dom": "^5.11.4",
+    "@testing-library/react": "^11.1.0",
+    "@testing-library/user-event": "^12.1.10",
+    "nervos-godwoken-integration": "0.0.8",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-scripts": "4.0.3",
+    "react-toastify": "^8.0.2",
+    "web-vitals": "^1.0.1",
+    "web3": "^1.5.2"
+  },
+  "scripts": {
+    "start": "react-app-rewired start",
+    "build": "react-app-rewired build",
+    "test": "react-app-rewired test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
     ],
-    "directories": {
-        "test": "test"
-    },
-    "scripts": {
-        "build": "yarn compile && yarn build:types && yarn build:ts",
-        "build:ts": "tsc -b tsconfig.build.json --verbose --pretty",
-        "build:types": "typechain --target=\"web3-v1\" --outDir=\"src/types\" \"build/contracts/**/*.json\"",
-        "clean": "shx rm -rf dist build",
-        "compile": "truffle compile",
-        "start:ganache": "ganache-cli -m \"chalk park staff buzz chair purchase wise oak receive avoid avoid home\" -l 8000000 -e 1000000 -a 20 -g 0 --chainId 1337",
-        "prettier": "prettier --write --config-precedence file-override './src/**/*'",
-        "ui": "cross-env NODE_OPTIONS=\"--max_old_space_size=8192\" webpack serve"
-    },
-    "types": "dist/js/src/index.d.ts",
-    "dependencies": {
-        "@polyjuice-provider/web3": "0.0.1-rc7",
-        "nervos-godwoken-integration": "0.0.6",
-        "react-toastify": "^7.0.4",
-        "web3": "1.3.4"
-    },
-    "devDependencies": {
-        "@typechain/web3-v1": "^2.2.0",
-        "@types/node": "12.12.27",
-        "@types/react": "16.9.21",
-        "@types/react-dom": "16.9.5",
-        "@typescript-eslint/eslint-plugin": "2.19.2",
-        "@typescript-eslint/parser": "2.19.2",
-        "assert": "^2.0.0",
-        "cross-env": "7.0.0",
-        "crypto-browserify": "^3.12.0",
-        "css-loader": "3.4.2",
-        "eslint": "6.8.0",
-        "eslint-config-airbnb-base": "14.0.0",
-        "eslint-config-prettier": "6.10.0",
-        "eslint-plugin-import": "2.20.1",
-        "eslint-plugin-prettier": "3.1.2",
-        "eslint-plugin-react": "7.18.3",
-        "ethlint": "1.2.5",
-        "extract-text-webpack-plugin": "3.0.2",
-        "fork-ts-checker-webpack-plugin": "4.0.4",
-        "ganache-cli": "6.12.2",
-        "html-webpack-plugin": "5.3.1",
-        "https-browserify": "^1.0.0",
-        "node-sass": "4.14.1",
-        "os-browserify": "^0.3.0",
-        "prettier": "1.19.1",
-        "process": "^0.11.10",
-        "react": "16.12.0",
-        "react-dom": "16.12.0",
-        "sass-loader": "8.0.2",
-        "shx": "0.3.2",
-        "stream-browserify": "^3.0.0",
-        "stream-http": "^3.1.1",
-        "style-loader": "1.1.3",
-        "truffle": "^5.2.6",
-        "ts-loader": "6.2.1",
-        "ts-node": "8.6.2",
-        "typechain": "^4.0.3",
-        "typescript": "4.2.3",
-        "vm-browserify": "^1.1.2",
-        "webpack": "5.36.0",
-        "webpack-cli": "4.6.0",
-        "webpack-dev-server": "3.11.2"
-    },
-    "engines": {
-        "node": "14"
-    }
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@babel/plugin-syntax-bigint": "^7.8.3",
+    "babel-loader": "8.1.0",
+    "babel-plugin-named-asset-import": "^0.3.7",
+    "react-app-rewired": "^2.1.8"
+  },
+  "engines": {
+    "node": ">= 14"
+  }
 }
