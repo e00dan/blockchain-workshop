@@ -1,6 +1,13 @@
 # Blockchain workshop
 
-*If you're looking for Nervos Layer 2 example application check [#godwoken](https://github.com/Kuzirashi/blockchain-workshop/tree/godwoken) branch.*
+## Branches
+
+| Name | Description |
+|---|---|
+| [godwoken-simple](https://github.com/Kuzirashi/blockchain-workshop/tree/godwoken-simple)  | Nervos Layer 2 React + Truffle + TypeScript starter |
+| [godwoken-simple-js](https://github.com/Kuzirashi/blockchain-workshop/tree/godwoken-simple-js) | Nervos Layer 2 React (Create React App) + JavaScript starter |
+| [godwoken](https://github.com/Kuzirashi/blockchain-workshop/tree/godwoken) | Nervos Layer 2 example application |
+| [stage-1 - stage-5](https://github.com/Kuzirashi/blockchain-workshop/tree/stage-1) | Ethereum Solidity smart contracts workshop |
 
 ## Requirements
 
