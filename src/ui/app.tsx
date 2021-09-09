@@ -15,14 +15,11 @@ import { CONFIG } from '../config';
 async function createWeb3() {
     // Modern dapp browsers...
     if ((window as any).ethereum) {
-        const godwokenRpcUrl = CONFIG.WEB3_PROVIDER_URL;
         const providerConfig = {
-            rollupTypeHash: CONFIG.ROLLUP_TYPE_HASH,
-            ethAccountLockCodeHash: CONFIG.ETH_ACCOUNT_LOCK_CODE_HASH,
-            web3Url: godwokenRpcUrl
+            web3Url: CONFIG.WEB3_PROVIDER_URL
         };
 
-        const provider = new PolyjuiceHttpProvider(godwokenRpcUrl, providerConfig);
+        const provider = new PolyjuiceHttpProvider(providerConfig.web3Url, providerConfig);
         const web3 = new Web3(provider || Web3.givenProvider);
 
         try {
