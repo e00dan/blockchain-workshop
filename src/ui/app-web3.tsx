@@ -1,13 +1,11 @@
 /* eslint-disable @typescript-eslint/camelcase */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-use-before-define */
-import { Amount } from '@lay2/pw-core';
 import React, { useEffect, useState } from 'react';
 import Web3 from 'web3';
-import PolyjuiceHttpProvider from '@retric/test-provider';
+import { PolyjuiceHttpProvider } from '@polyjuice-provider/web3';
 import { createChoiceSignature, domainSeparator } from '../common';
 import { HeadTailPolyjuice } from '../lib/contracts/HeadTail';
-import { initPWCore } from '../lib/portalwallet/pw';
 import './app.scss';
 
 let DEFAULT_CALL_OPTIONS: any = {};
@@ -15,19 +13,11 @@ let DEFAULT_CALL_OPTIONS: any = {};
 async function createWeb3() {
     // Modern dapp browsers...
     if ((window as any).ethereum) {
-        const godwokenRpcUrl = 'https://godwoken-testnet-web3-rpc.ckbapp.dev';
         const providerConfig = {
-            godwoken: {
-                rollup_type_hash:
-                    '0x9b260161e003972c0b699939bc164cfdcfce7fd40eb9135835008dd7e09d3dae',
-                eth_account_lock: {
-                    code_hash: '0xfcf093a5f1df4037cea259d49df005e0e7258b4f63e67233eda5b376b7fd2290',
-                    hash_type: 'type' as any
-                }
-            }
+            web3Url: 'https://godwoken-testnet-web3-rpc.ckbapp.dev'
         };
 
-        const provider = new PolyjuiceHttpProvider(godwokenRpcUrl, providerConfig);
+        const provider = new PolyjuiceHttpProvider(providerConfig.web3Url, providerConfig);
         const web3 = new Web3(provider || Web3.givenProvider);
 
         try {
@@ -55,7 +45,6 @@ export function App() {
     const [web3, setWeb3] = useState<Web3>(null);
     const [contract, setContract] = useState<HeadTailPolyjuice>();
     const [accounts, setAccounts] = useState<string[]>();
-    const [l1Balance, setL1Balance] = useState<Amount>();
     const [l2Balance, setL2Balance] = useState<bigint>();
     const [godwokenAccountId, setGodwokenAccountId] = useState<number>();
     const [firstUserChoice, setFirstUserChoice] = useState<CHOICE_TYPE>(true);
@@ -71,7 +60,6 @@ export function App() {
 
     const account = accounts?.[0];
     DEFAULT_CALL_OPTIONS = {
-        gasPrice: '0',
         from: account
     };
 

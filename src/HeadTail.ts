@@ -2,8 +2,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import Web3 from 'web3';
-import PolyjuiceHttpProviderForNode from '@retric/test-provider/lib/cli';
-// import { CONFIG } from './config';
+import { PolyjuiceAccounts, PolyjuiceHttpProvider } from '@polyjuice-provider/web3';
 import {
     deployHeadTailContract,
     createChoiceSignature,
@@ -11,52 +10,32 @@ import {
     useExistingHeadTailContract
 } from './common';
 
-const godwoken_rpc_url = 'https://godwoken-testnet-web3-rpc.ckbapp.dev';
-const provider_config = {
-    godwoken: {
-        rollup_type_hash: '0x9b260161e003972c0b699939bc164cfdcfce7fd40eb9135835008dd7e09d3dae',
-        eth_account_lock: {
-            code_hash: '0xfcf093a5f1df4037cea259d49df005e0e7258b4f63e67233eda5b376b7fd2290',
-            hash_type: 'type' as any
-        }
-    }
+const providerConfig = {
+    web3Url: 'https://godwoken-testnet-web3-rpc.ckbapp.dev'
 };
 
 const ONLY_DEPLOY_AND_STOP = false;
 
-const BET_VALUE = BigInt(10 * 10 ** 8).toString(); // 10 CKB
+const BET_VALUE = BigInt(10).toString(); // 10 CKB
 const USER_ONE_PRIVATE_KEY = '0xd9066ff9f753a1898709b568119055660a77d9aae4d7a4ad677b8fb3d2a571e5';
 const USER_TWO_PRIVATE_KEY = '0xd9bc30dc17023fbb68fe3002e0ff9107b241544fd6d60863081c55e383f1b5a3';
-
-const userOneEthAddress = '0xD173313A51f8fc37BcF67569b463abd89d81844f';
-const userTwoEthAddress = '0xd46aC0Bc23dB5e8AfDAAB9Ad35E9A3bA05E092E8';
 
 async function runDemo() {
     // workaround to keep program alive
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     setInterval(() => {}, 1 << 30);
 
-    const providerUserOne = new PolyjuiceHttpProviderForNode(
-        godwoken_rpc_url,
-        provider_config,
-        [],
-        USER_ONE_PRIVATE_KEY
-    );
-    const web3UserOne = new Web3(providerUserOne);
+    const provider = new PolyjuiceHttpProvider(providerConfig.web3Url, providerConfig);
 
-    const providerUserTwo = new PolyjuiceHttpProviderForNode(
-        godwoken_rpc_url,
-        provider_config,
-        [],
-        USER_TWO_PRIVATE_KEY
-    );
-    const web3UserTwo = new Web3(providerUserTwo);
+    const web3 = new Web3(provider);
 
-    // const USER_ONE_ACCOUNT = web3.eth.accounts.wallet.add(USER_ONE_PRIVATE_KEY);
-    // const USER_TWO_ACCOUNT = web3.eth.accounts.wallet.add(USER_TWO_PRIVATE_KEY);
+    web3.eth.accounts = new PolyjuiceAccounts(providerConfig);
+    const USER_ONE_ACCOUNT = web3.eth.accounts.wallet.add(USER_ONE_PRIVATE_KEY);
+    const USER_TWO_ACCOUNT = web3.eth.accounts.wallet.add(USER_TWO_PRIVATE_KEY);
+    (web3.eth.Contract as any).setProvider(provider, web3.eth.accounts);
 
-    // const userOneEthAddress = USER_ONE_ACCOUNT.address;
-    // const userTwoEthAddress = '0x'; // USER_TWO_ACCOUNT.address;
+    const userOneEthAddress = USER_ONE_ACCOUNT.address;
+    const userTwoEthAddress = USER_TWO_ACCOUNT.address;
 
     const choice = true;
     const secret = 'THIS_IS_SECRET';
@@ -75,12 +54,12 @@ async function runDemo() {
 
     console.log('Deploying contract...');
 
-    const headTailUserOne = await deployHeadTailContract(web3UserOne, userOneEthAddress);
+    const headTailUserOne = await deployHeadTailContract(web3, userOneEthAddress);
 
     console.log(`Deployed contract: ${headTailUserOne.options.address}`);
 
     const headTailUserTwo = await useExistingHeadTailContract(
-        web3UserTwo,
+        web3,
         headTailUserOne.options.address
     );
 
@@ -113,13 +92,13 @@ async function runDemo() {
         secret,
         CHAIN_ID,
         headTailUserOne.options.address,
-        web3UserOne,
+        web3,
         USER_ONE_PRIVATE_KEY
     );
 
     console.log(`user balances before bet:
-        1 = ${await getBalanceAndDisplayFormatted(userOneEthAddress, web3UserOne)}
-        2 = ${await getBalanceAndDisplayFormatted(userTwoEthAddress, web3UserOne)}
+        1 = ${await getBalanceAndDisplayFormatted(userOneEthAddress, web3)}
+        2 = ${await getBalanceAndDisplayFormatted(userTwoEthAddress, web3)}
     `);
 
     await headTailUserOne.methods.depositUserOne(signedChoiceHash, BET_VALUE).send({
@@ -168,8 +147,8 @@ async function runDemo() {
     console.log('Bet settled successfully.');
 
     console.log(`user balances after bet:
-        1 = ${await getBalanceAndDisplayFormatted(userOneEthAddress, web3UserOne)}
-        2 = ${await getBalanceAndDisplayFormatted(userTwoEthAddress, web3UserOne)}
+        1 = ${await getBalanceAndDisplayFormatted(userOneEthAddress, web3)}
+        2 = ${await getBalanceAndDisplayFormatted(userTwoEthAddress, web3)}
     `);
 
     process.exit();

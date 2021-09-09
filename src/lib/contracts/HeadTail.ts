@@ -1,24 +1,13 @@
 /* eslint-disable prefer-destructuring */
 import Web3 from 'web3';
-// import { Hash } from '@ckb-lumos/base';
 import { HeadTail } from '../../types/HeadTail';
 import * as HeadTailJSON from '../../../build/contracts/HeadTail.json';
-// import {
-//     deployContract,
-//     executeL2Transaction,
-//     submitL2Transaction
-// } from '../polyjuice/polyjuice_actions';
-// import { RunResult } from '../godwoken';
 
 const DEPOSIT_AMOUNT = BigInt(1 * 10 ** 18).toString();
 
-const DEFAULT_CALL_OPTIONS = {
-    gasPrice: '0'
-};
+const DEFAULT_CALL_OPTIONS = {};
 
-const DEFAULT_SEND_OPTIONS = {
-    gasPrice: '0'
-};
+const DEFAULT_SEND_OPTIONS = {};
 export class HeadTailPolyjuice {
     web3: Web3;
 

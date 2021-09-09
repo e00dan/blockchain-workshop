@@ -1,7 +1,3 @@
-/* eslint-disable @typescript-eslint/camelcase */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-use-before-define */
-import { Amount } from '@lay2/pw-core';
 import React, { useEffect, useState } from 'react';
 import Web3 from 'web3';
 import {
@@ -60,7 +56,6 @@ export function App() {
     const [signer, setSigner] = useState<Signer>(null);
     const [contract, setContract] = useState<HeadTailPolyjuiceEthers>();
     const [accounts, setAccounts] = useState<string[]>();
-    const [l1Balance, setL1Balance] = useState<Amount>();
     const [l2Balance, setL2Balance] = useState<bigint>();
     const [godwokenAccountId, setGodwokenAccountId] = useState<number>();
     const [firstUserChoice, setFirstUserChoice] = useState<CHOICE_TYPE>(true);
