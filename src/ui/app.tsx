@@ -4,7 +4,7 @@
 import React, { useEffect, useState } from 'react';
 import Web3 from 'web3';
 import { ToastContainer, toast } from 'react-toastify';
-import './app.scss';
+import './app.css';
 import 'react-toastify/dist/ReactToastify.css';
 import { PolyjuiceHttpProvider } from '@polyjuice-provider/web3';
 import { AddressTranslator } from 'nervos-godwoken-integration';
