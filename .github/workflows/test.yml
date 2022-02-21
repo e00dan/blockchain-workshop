@@ -16,7 +16,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - run: yarn
       - run: yarn build
-      - run: yarn start:ganache > /dev/null &
+      - run: yarn start:ethereum > /dev/null &
       - run: sleep 5
       - run: yarn start
       - run: yarn test

@@ -39,7 +39,7 @@ yarn build:ts
 
 Start local Ethereum blockchain:
 ```
-yarn start:ganache
+yarn start:ethereum
 ```
 
 Run demo (`src/HeadTail.ts`):
