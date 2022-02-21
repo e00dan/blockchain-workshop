@@ -51,15 +51,3 @@ Test:
 ```
 yarn test
 ```
-
-
-
-## Overview
-
-Caution: Outdated diagram
-
-![Diagram](diagram.png?raw=true "Architecture")
-
-## Slides
-
-- Polish version: https://drive.google.com/open?id=1nGIvaI70fv-zqX3EsXHxZfhqX9QGQdylCdpFZsvwPnM
