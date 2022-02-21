@@ -10,8 +10,7 @@
 
 ## Requirements
 
-1. Docker - required for compilation of smart contracts
-2. Node.js version `>= 14`
+1. Node.js version `>= 16`
 
 ## Install and run
 
@@ -32,7 +31,12 @@ yarn compile
 yarn build:ts
 ```
 
-Start `src/HeadTail.ts`:
+Start local Ethereum blockchain:
+```
+yarn start:ganache
+```
+
+Run demo (`src/HeadTail.ts`):
 ```
 yarn start
 ```
@@ -42,11 +46,7 @@ Test:
 yarn test
 ```
 
-Make sure to start local blockchain first:
 
-```
-yarn start:ganache
-```
 
 ## Overview
 

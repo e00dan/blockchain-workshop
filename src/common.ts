@@ -1,15 +1,9 @@
-import Web3 from 'web3';
-import { HeadTail } from './types/HeadTail';
-import * as HeadTailJSON from '../build/contracts/HeadTail.json';
+import { providers } from 'ethers';
+import { HeadTail__factory } from '../typechain-types';
 
-export async function deployHeadTailContract(web3: Web3, account: string): Promise<HeadTail> {
-    const HeadTailContract: HeadTail = new web3.eth.Contract(HeadTailJSON.abi as any) as any;
+export async function deployHeadTailContract(rpc: providers.JsonRpcProvider, from: string) {
+    const signer = rpc.getSigner(from);
+    const factory = new HeadTail__factory(signer);
 
-    return (HeadTailContract.deploy({
-        data: HeadTailJSON.bytecode,
-        arguments: []
-    }).send({
-        from: account,
-        gas: 6000000
-    }) as any) as HeadTail;
+    return factory.deploy();
 }

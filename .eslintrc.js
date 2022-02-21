@@ -32,6 +32,7 @@ module.exports = {
         }],
         "@typescript-eslint/no-unused-vars": "error",
         "@typescript-eslint/no-explicit-any": "warn",
+        "@typescript-eslint/camelcase": "off",
         "no-await-in-loop": "off",
         "no-plusplus": "off",
         "no-console": "off",

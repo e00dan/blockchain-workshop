@@ -1,20 +1,24 @@
-import Web3 from 'web3';
+import { providers } from 'ethers';
+
 import { CONFIG } from './config';
 import { deployHeadTailContract } from './common';
 
 (async () => {
-    const web3 = new Web3(CONFIG.WEB3_PROVIDER_URL);
-
-    const accounts = await web3.eth.getAccounts();
+    const rpc = new providers.JsonRpcProvider(CONFIG.WEB3_PROVIDER_URL);
+    const accounts = await rpc.listAccounts();
     const userOne = accounts[0];
 
-    const headTail = await deployHeadTailContract(web3, userOne);
+    const headTail = await deployHeadTailContract(rpc, userOne);
 
-    await headTail.methods.setCounter(2).send({
+    await headTail.setCounter(2, {
         from: userOne
     });
 
-    console.log(await headTail.methods.counter().call());
-    console.log(await headTail.methods.counterMultiplied(2).call()); // 4
-    console.log(await headTail.methods.counterMultipliedSquare(2).call()); // 8
+    console.log(`counter(): ${await (await headTail.counter()).toBigInt()}`);
+    console.log(`counterMultiplied(): ${await (await headTail.counterMultiplied(2)).toBigInt()}`); // 4
+    console.log(
+        `counterMultipliedBySquareOf(): ${await (
+            await headTail.counterMultipliedBySquareOf(3)
+        ).toBigInt()}`
+    ); // 8
 })();

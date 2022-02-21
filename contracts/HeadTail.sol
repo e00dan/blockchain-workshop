@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.12;
+pragma solidity 0.8.9;
 
 contract HeadTail {
     uint public counter;
@@ -18,7 +18,7 @@ contract HeadTail {
         _counterMultiplied = counter * _multiplier;
     }
 
-    function counterMultipliedSquare(uint _multiplier) public view returns (uint) {
+    function counterMultipliedBySquareOf(uint _multiplier) public view returns (uint) {
         return counterMultiplied(_multiplier) * _multiplier;
     }
 }
