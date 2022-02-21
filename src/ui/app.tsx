@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Web3 from 'web3';
 import { deployHeadTailContract } from '../common';
 import { HeadTail } from '../types/HeadTail';
-import './app.scss';
+import './app.css';
 
 async function createWeb3() {
     // Modern dapp browsers...
