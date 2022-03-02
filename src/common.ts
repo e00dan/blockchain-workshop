@@ -1,8 +1,7 @@
-import { providers } from 'ethers';
+import { Signer } from 'ethers';
 import { HeadTail__factory } from '../typechain-types';
 
-export async function deployHeadTailContract(rpc: providers.JsonRpcProvider, from: string) {
-    const signer = rpc.getSigner(from);
+export async function deployHeadTailContract(signer: Signer) {
     const factory = new HeadTail__factory(signer);
 
     return factory.deploy();

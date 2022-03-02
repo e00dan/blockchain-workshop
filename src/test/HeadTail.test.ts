@@ -1,6 +1,6 @@
 import { describe, beforeEach } from 'mocha';
 import { expect } from 'chai';
-import { providers } from 'ethers';
+import { providers, Signer, Wallet } from 'ethers';
 
 import { HeadTail } from '../../typechain-types';
 import { deployHeadTailContract } from '../common';
@@ -8,16 +8,19 @@ import { CONFIG } from '../config';
 
 describe('HeadTail', () => {
     let rpc: providers.JsonRpcProvider;
-    let accounts: string[];
+    let signer: Signer;
     let contract: HeadTail;
 
     before(async () => {
         rpc = new providers.JsonRpcProvider(CONFIG.WEB3_PROVIDER_URL);
-        accounts = await rpc.listAccounts();
+        const PRIVATE_KEY = '0xd9066ff9f753a1898709b568119055660a77d9aae4d7a4ad677b8fb3d2a571e5';
+        const wallet = new Wallet(PRIVATE_KEY);
+
+        signer = wallet.connect(rpc);
     });
 
     beforeEach(async () => {
-        contract = await deployHeadTailContract(rpc, accounts[0]);
+        contract = await deployHeadTailContract(signer);
     });
 
     // You may want to delete "Setup test" completely when you start work on implementing Stage 1 specification
