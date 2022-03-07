@@ -1,63 +1,62 @@
-import Web3 from 'web3';
-import { bufferToHex } from 'ethereumjs-util';
+import { providers, utils, Wallet } from 'ethers';
+
 import { CONFIG } from './config';
 import { deployHeadTailContract, createChoiceSignature } from './common';
 
-const oneEther = BigInt(1 * 10 ** 18).toString();
+const betValue = BigInt(1 * 10 ** 8);
 
 (async () => {
-    const web3 = new Web3(CONFIG.WEB3_PROVIDER_URL);
+    const rpc = new providers.JsonRpcProvider(CONFIG.WEB3_PROVIDER_URL);
 
-    const accounts = await web3.eth.getAccounts();
+    const userOneWallet = new Wallet(CONFIG.TEST_ACCOUNTS.USER_ONE_PRIVATE_KEY);
+    const userOneSigner = userOneWallet.connect(rpc);
+    const userOneAddress = await userOneSigner.getAddress();
 
-    const userOne = accounts[0];
-    const userTwo = accounts[1];
+    const userTwoWallet = new Wallet(CONFIG.TEST_ACCOUNTS.USER_TWO_PRIVATE_KEY);
+    const userTwoSigner = userTwoWallet.connect(rpc);
+    const userTwoAddress = await userTwoSigner.getAddress();
 
     const choice = true;
     const secret = '312d35asd454asddasddd2344124444444fyguijkfdr4';
 
     console.log({
-        userOne,
+        userOneAddress,
+        userTwoAddress,
         choice,
         secret
     });
 
-    const { signedChoiceHash, choiceHash, v, r, s } = await createChoiceSignature(
-        userOne,
-        choice,
-        secret,
-        web3
-    );
-
-    console.log({
-        signedChoiceHash,
-        choiceHash,
-        v,
-        r,
-        s
-    });
-
-    const headTail = await deployHeadTailContract(web3, userOne, signedChoiceHash);
-
-    await headTail.methods.depositUserTwo(false).send({
-        value: oneEther,
-        from: userTwo
-    });
-
-    const addressRecoveredInJS = web3.eth.accounts.recover(
-        choiceHash,
-        `0x${v.toString(16)}`,
-        bufferToHex(r),
-        bufferToHex(s)
-    );
-
-    await headTail.methods.revealUserOneChoice(true, secret).send({
-        from: userOne
-    });
+    const { choiceHash, signature } = await createChoiceSignature(userOneSigner, choice, secret);
 
     console.log({
         choiceHash,
-        signedChoiceHash,
-        addressRecoveredInJS
+        signature
+    });
+
+    const headTailUserOne = await deployHeadTailContract(userOneSigner, signature);
+
+    const headTailUserTwo = headTailUserOne.connect(userTwoSigner);
+    await headTailUserTwo.depositUserTwo(false, {
+        value: betValue
+    });
+
+    console.log({
+        userTwoAddressFromSC: await headTailUserOne.userTwoAddress()
+    });
+
+    const messageHashBytes = utils.arrayify(choiceHash);
+    const addressRecoveredInJSEthers = utils.verifyMessage(messageHashBytes, signature);
+
+    await headTailUserOne.revealUserOneChoice(true, secret);
+    // const revealReceipt = await revealTx.wait();
+
+    const addressFromSC = await headTailUserOne.verify(choiceHash, signature);
+
+    console.log({
+        // choiceHash,
+        // signedChoiceHash,
+        addressFromSC,
+        addressRecoveredInJSEthers
+        // revealReceipt
     });
 })();

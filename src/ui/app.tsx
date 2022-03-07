@@ -1,22 +1,24 @@
 import React, { useEffect, useState } from 'react';
-import Web3 from 'web3';
+import { providers } from 'ethers';
 import { deployHeadTailContract } from '../common';
-import { HeadTail } from '../types/HeadTail';
-import './app.scss';
+import { HeadTail } from '../../typechain-types';
+import './app.css';
 
-async function createWeb3() {
+async function createProvider() {
     // Modern dapp browsers...
     if ((window as any).ethereum) {
-        const web3 = new Web3((window as any).ethereum);
-
         try {
-            // Request account access if needed
-            await (window as any).ethereum.enable();
+            // A Web3Provider wraps a standard Web3 provider, which is
+            // what MetaMask injects as window.ethereum into each page
+            const provider = new providers.Web3Provider((window as any).ethereum);
+
+            // MetaMask requires requesting permission to connect users accounts
+            await provider.send('eth_requestAccounts', []);
+
+            return provider;
         } catch (error) {
             // User denied account access...
         }
-
-        return web3;
     }
 
     console.log('Non-Ethereum browser detected. You should consider trying MetaMask!');
@@ -24,28 +26,26 @@ async function createWeb3() {
 }
 
 export function App() {
-    const [web3, setWeb3] = useState<Web3>(null);
+    const [provider, setProvider] = useState<providers.Web3Provider>(null);
     const [contract, setContract] = useState<HeadTail>();
 
     async function deployContract() {
-        const accounts = await web3.eth.getAccounts();
-
-        setContract(await deployHeadTailContract(web3, accounts[0], '0x'));
+        setContract(await deployHeadTailContract(provider.getSigner(), '0x'));
     }
 
     useEffect(() => {
-        if (web3) {
+        if (provider) {
             return;
         }
 
         (async () => {
-            setWeb3(await createWeb3());
+            setProvider(await createProvider());
         })();
     });
 
     return (
         <div>
-            Deployed contract address: <b>{contract?.options?.address}</b>
+            Deployed contract address: <b>{contract?.address}</b>
             <br />
             <br />
             <button onClick={deployContract}>Deploy contract</button>
