@@ -21,7 +21,7 @@ export default {
         },
         gw_testnet_v1: {
             url: `https://godwoken-testnet-web3-v1-rpc.ckbapp.dev`,
-            accounts: [`0x${PRIVATE_KEY}`]
+            accounts: [PRIVATE_KEY]
         }
     }
 };

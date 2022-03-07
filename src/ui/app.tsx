@@ -30,9 +30,7 @@ export function App() {
     const [contract, setContract] = useState<HeadTail>();
 
     async function deployContract() {
-        const accounts = await provider.listAccounts();
-
-        setContract(await deployHeadTailContract(provider, accounts[0]));
+        setContract(await deployHeadTailContract(provider.getSigner()));
     }
 
     useEffect(() => {

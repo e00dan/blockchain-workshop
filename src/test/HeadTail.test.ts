@@ -25,7 +25,11 @@ describe('HeadTail', () => {
 
     // You may want to delete "Setup test" completely when you start work on implementing Stage 1 specification
     describe('Setup test', () => {
-        it('is possible to deploy a starting contract with counter', async () => {
+        it('deploys contract', () => {
+            expect(contract.address).to.be.lengthOf(42);
+        });
+
+        it('has a valid starting counter() value', async () => {
             const initialCounter = (await contract.counter()).toBigInt();
             expect(initialCounter).to.be.equal(BigInt(1));
         });

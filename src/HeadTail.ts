@@ -1,14 +1,15 @@
-import { providers } from 'ethers';
+import { providers, Wallet } from 'ethers';
 
 import { CONFIG } from './config';
 import { deployHeadTailContract } from './common';
 
 (async () => {
     const rpc = new providers.JsonRpcProvider(CONFIG.WEB3_PROVIDER_URL);
-    const accounts = await rpc.listAccounts();
-    const userOne = accounts[0];
+    const wallet = new Wallet(CONFIG.TEST_ACCOUNTS.USER_ONE_PRIVATE_KEY);
+    const signer = wallet.connect(rpc);
+    const userOne = signer.getAddress();
 
-    const headTail = await deployHeadTailContract(rpc, userOne);
+    const headTail = await deployHeadTailContract(signer);
 
     await headTail.setCounter(2, {
         from: userOne
