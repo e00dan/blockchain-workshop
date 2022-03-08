@@ -38,10 +38,10 @@ describe('HeadTail', () => {
     });
 
     describe('Stage 1', () => {
-        it('allows to deposit BET_VALUE', async () => {
-            const getUserOneBalance = async () => rpc.getBalance(await signer.getAddress());
-            const getUserOneBalanceAsString = async () => (await getUserOneBalance()).toString();
+        const getUserOneBalance = async () => rpc.getBalance(await signer.getAddress());
+        const getUserOneBalanceAsString = async () => (await getUserOneBalance()).toString();
 
+        it('allows to deposit BET_VALUE', async () => {
             const startingBalance = await getUserOneBalance();
 
             await deployHeadTailContract(signer, '0x');
@@ -51,25 +51,21 @@ describe('HeadTail', () => {
             );
         });
 
-        // it('saves address of user', async () => {
-        //     const account = accounts[0];
+        it('saves address of user', async () => {
+            contract = await deployHeadTailContract(signer, '0x');
 
-        //     const contract = await deployHeadTailContract(web3, accounts[0], '0x0');
+            expect(await contract.userOneAddress()).to.be.equal(await signer.getAddress());
+        });
 
-        //     expect(await contract.methods.userOneAddress().call()).to.be.equal(account);
-        // });
+        it('allows depositing 777 wei', async () => {
+            const startingBalance = await getUserOneBalance();
 
-        // it('allows depositing 777 wei', async () => {
-        //     const account = accounts[0];
+            await deployHeadTailContract(signer, '0x', BigInt(777));
 
-        //     const startingBalance = await getBalance(account);
-
-        //     await deployHeadTailContract(web3, accounts[0], '0x0', '777');
-
-        //     expect(await getBalanceAsString(account)).to.be.equal(
-        //         (startingBalance - BigInt(777)).toString()
-        //     );
-        // });
+            expect(await getUserOneBalanceAsString()).to.be.equal(
+                startingBalance.sub(777).toString()
+            );
+        });
     });
 
     // describe('Stage 2', () => {

@@ -12,6 +12,7 @@ export async function deployHeadTailContract(
 
     return factory.deploy(choiceHash, value, {
         value,
+        gasLimit: 6000000,
         gasPrice: 0
     });
 }

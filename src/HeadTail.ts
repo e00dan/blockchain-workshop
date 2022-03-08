@@ -35,13 +35,16 @@ const betValue = BigInt(1 * 10 ** 8);
 
     const headTailUserOne = await deployHeadTailContract(userOneSigner, signature);
 
+    console.log(`contract deployed at: ${headTailUserOne.address}`);
+
     const headTailUserTwo = headTailUserOne.connect(userTwoSigner);
     await headTailUserTwo.depositUserTwo(false, {
         value: betValue
     });
 
     console.log({
-        userTwoAddressFromSC: await headTailUserOne.userTwoAddress()
+        userTwoAddressFromSC: await headTailUserOne.userTwoAddress(),
+        smartContractBalance: await (await rpc.getBalance(headTailUserOne.address)).toBigInt()
     });
 
     const messageHashBytes = utils.arrayify(choiceHash);
@@ -49,6 +52,12 @@ const betValue = BigInt(1 * 10 ** 8);
 
     await headTailUserOne.revealUserOneChoice(true, secret);
     // const revealReceipt = await revealTx.wait();
+
+    console.log({
+        smartContractBalanceAfterReveal: await (
+            await rpc.getBalance(headTailUserOne.address)
+        ).toBigInt()
+    });
 
     const addressFromSC = await headTailUserOne.verify(choiceHash, signature);
 
