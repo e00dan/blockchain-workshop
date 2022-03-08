@@ -1,7 +1,7 @@
 name: Test & Build
 on:
   push:
-    branches: [master]
+    branches: [master, godwoken-stage-5]
 jobs:
   build:
     runs-on: ubuntu-latest
