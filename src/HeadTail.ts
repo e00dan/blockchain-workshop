@@ -50,7 +50,9 @@ const betValue = BigInt(1 * 10 ** 8);
     const messageHashBytes = utils.arrayify(choiceHash);
     const addressRecoveredInJSEthers = utils.verifyMessage(messageHashBytes, signature);
 
-    await headTailUserOne.revealUserOneChoice(true, secret);
+    await headTailUserOne.revealUserOneChoice(true, secret, {
+        gasLimit: 10000000
+    });
     // const revealReceipt = await revealTx.wait();
 
     console.log({

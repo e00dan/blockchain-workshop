@@ -3,7 +3,7 @@ import { expect } from 'chai';
 import { providers, Signer, Wallet } from 'ethers';
 
 import { HeadTail } from '../../typechain-types';
-import { deployHeadTailContract } from '../common';
+import { createChoiceSignature, deployHeadTailContract } from '../common';
 import { CONFIG } from '../config';
 
 const BET_VALUE = BigInt(1 * 10 ** 8);
@@ -13,13 +13,20 @@ describe('HeadTail', () => {
     let contract: HeadTail;
 
     let userOneSigner: Signer;
+    let userOneAddress: string;
     let userTwoSigner: Signer;
+    let userTwoAddress: string;
+
+    const getBalance = async (address: string) => rpc.getBalance(address);
+    const getBalanceAsString = async (address: string) => (await getBalance(address)).toString();
 
     before(async () => {
         rpc = new providers.JsonRpcProvider(CONFIG.WEB3_PROVIDER_URL);
 
         userOneSigner = new Wallet(CONFIG.TEST_ACCOUNTS.USER_ONE_PRIVATE_KEY).connect(rpc);
+        userOneAddress = await userOneSigner.getAddress();
         userTwoSigner = new Wallet(CONFIG.TEST_ACCOUNTS.USER_TWO_PRIVATE_KEY).connect(rpc);
+        userTwoAddress = await userTwoSigner.getAddress();
     });
 
     describe('Setup test', () => {
@@ -39,15 +46,12 @@ describe('HeadTail', () => {
     });
 
     describe('Stage 1', () => {
-        const getUserOneBalance = async () => rpc.getBalance(await userOneSigner.getAddress());
-        const getUserOneBalanceAsString = async () => (await getUserOneBalance()).toString();
-
         it('allows to deposit BET_VALUE', async () => {
-            const startingBalance = await getUserOneBalance();
+            const startingBalance = await getBalance(userOneAddress);
 
             await deployHeadTailContract(userOneSigner, '0x');
 
-            expect(await getUserOneBalanceAsString()).to.be.equal(
+            expect(await getBalanceAsString(userOneAddress)).to.be.equal(
                 startingBalance.sub(BET_VALUE).toString()
             );
         });
@@ -59,11 +63,11 @@ describe('HeadTail', () => {
         });
 
         it('allows depositing 777 wei', async () => {
-            const startingBalance = await getUserOneBalance();
+            const startingBalance = await getBalance(userOneAddress);
 
             await deployHeadTailContract(userOneSigner, '0x', BigInt(777));
 
-            expect(await getUserOneBalanceAsString()).to.be.equal(
+            expect(await getBalanceAsString(userOneAddress)).to.be.equal(
                 startingBalance.sub(777).toString()
             );
         });
@@ -84,44 +88,44 @@ describe('HeadTail', () => {
         });
     });
 
-    // describe('Stage 5', () => {
-    //     it('sends ether to a second user after a correct guess', async () => {
-    //         const userOne = accounts[0];
-    //         const userTwo = accounts[1];
+    describe('Stage 5', () => {
+        it('sends ether to a second user after a correct guess', async () => {
+            const startingUserOneBalance = await getBalance(userOneAddress);
+            const startingUserTwoBalance = await getBalance(userTwoAddress);
 
-    //         const startingUserOneBalance = await getBalance(userOne);
-    //         const startingUserTwoBalance = await getBalance(userTwo);
+            const userOneChoice = true;
+            const userOneChoiceSecret = '312d35asd454asddasddd2344124444444fyguijkfdr4';
 
-    //         const userOneChoice = true;
-    //         const userOneChoiceSecret = '312d35asd454asddasddd2344124444444fyguijkfdr4';
+            const { signature } = await createChoiceSignature(
+                userOneSigner,
+                userOneChoice,
+                userOneChoiceSecret
+            );
 
-    //         const { signedChoiceHash } = await createChoiceSignature(
-    //             userOne,
-    //             userOneChoice,
-    //             userOneChoiceSecret,
-    //             web3
-    //         );
+            contract = await deployHeadTailContract(userOneSigner, signature);
 
-    //         const contract = await deployHeadTailContract(web3, userOne, signedChoiceHash);
+            expect(await contract.userOneAddress()).to.be.equal(userOneAddress);
 
-    //         expect(await contract.methods.userOneAddress().call()).to.be.equal(userOne);
+            const contractAsUserTwo = contract.connect(userTwoSigner);
+            await contractAsUserTwo.depositUserTwo(true, {
+                gasPrice: 0,
+                value: BET_VALUE
+            });
 
-    //         await contract.methods.depositUserTwo(true).send({
-    //             value: ONE_ETHER.toString(),
-    //             from: userTwo
-    //         });
+            await contract.revealUserOneChoice(userOneChoice, userOneChoiceSecret, {
+                gasPrice: 0,
+                gasLimit: 10000000
+            });
 
-    //         await contract.methods.revealUserOneChoice(userOneChoice, userOneChoiceSecret).send({
-    //             from: userOne
-    //         });
+            expect(await getBalanceAsString(userOneAddress)).to.be.equal(
+                startingUserOneBalance.sub(BET_VALUE).toString(),
+                'user one lost BET_VALUE in a bet'
+            );
 
-    //         expect(await getBalanceAsString(userOne)).to.be.equal(
-    //             (startingUserOneBalance - ONE_ETHER).toString()
-    //         );
-
-    //         expect(await getBalanceAsString(userTwo)).to.be.equal(
-    //             (startingUserTwoBalance + ONE_ETHER).toString()
-    //         );
-    //     });
-    // });
+            expect(await getBalanceAsString(userTwoAddress)).to.be.equal(
+                startingUserTwoBalance.add(BET_VALUE).toString(),
+                'user two won BET_VALUE in a bet'
+            );
+        });
+    });
 });
