@@ -21,11 +21,9 @@ export class SimpleStorageWrapper {
     }
 
     async setStoredValue(value: number) {
-        const tx = await this.contract.set(value, {
+        return this.contract.set(value, {
             gasLimit: 1000000
         });
-
-        return tx;
     }
 
     async deploy() {
