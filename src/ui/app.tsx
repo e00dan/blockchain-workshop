@@ -1,27 +1,30 @@
-/* eslint-disable @typescript-eslint/camelcase */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import React, { useEffect, useState } from 'react';
-import Web3 from 'web3';
 import { ToastContainer, toast } from 'react-toastify';
 import './app.css';
 import 'react-toastify/dist/ReactToastify.css';
 
+import { ethers, providers } from 'ethers';
 import { SimpleStorageWrapper } from '../lib/contracts/SimpleStorageWrapper';
 
 async function createWeb3() {
     // Modern dapp browsers...
     if ((window as any).ethereum) {
-        const web3 = new Web3((window as any).ethereum);
+        let provider: providers.Web3Provider | undefined;
 
         try {
-            // Request account access if needed
-            await (window as any).ethereum.enable();
+            // A Web3Provider wraps a standard Web3 provider, which is
+            // what MetaMask injects as window.ethereum into each page
+            provider = new ethers.providers.Web3Provider((window as any).ethereum);
+
+            // MetaMask requires requesting permission to connect users accounts
+            await provider.send('eth_requestAccounts', []);
         } catch (error) {
             // User denied account access...
         }
 
-        return web3;
+        return provider;
     }
 
     console.log('Non-Ethereum browser detected. You should consider trying MetaMask!');
@@ -29,7 +32,7 @@ async function createWeb3() {
 }
 
 export function App() {
-    const [web3, setWeb3] = useState<Web3>(null);
+    const [web3, setWeb3] = useState<providers.Web3Provider>(null);
     const [contract, setContract] = useState<SimpleStorageWrapper>();
     const [accounts, setAccounts] = useState<string[]>();
     const [balance, setBalance] = useState<bigint>();
@@ -65,12 +68,12 @@ export function App() {
     const account = accounts?.[0];
 
     async function deployContract() {
-        const _contract = new SimpleStorageWrapper(web3);
+        const _contract = new SimpleStorageWrapper(web3.getSigner());
 
         try {
             setTransactionInProgress(true);
 
-            await _contract.deploy(account);
+            await _contract.deploy();
 
             setExistingContractAddress(_contract.address);
             toast(
@@ -86,14 +89,14 @@ export function App() {
     }
 
     async function getStoredValue() {
-        const value = await contract.getStoredValue(account);
+        const value = await contract.getStoredValue();
         toast('Successfully read latest stored value.', { type: 'success' });
 
         setStoredValue(value);
     }
 
     async function setExistingContractAddress(contractAddress: string) {
-        const _contract = new SimpleStorageWrapper(web3);
+        const _contract = new SimpleStorageWrapper(web3.getSigner());
         _contract.useDeployed(contractAddress.trim());
 
         setContract(_contract);
@@ -103,7 +106,7 @@ export function App() {
     async function setNewStoredValue() {
         try {
             setTransactionInProgress(true);
-            await contract.setStoredValue(newStoredNumberInputValue, account);
+            await contract.setStoredValue(newStoredNumberInputValue);
             toast(
                 'Successfully set latest stored value. You can refresh the read value now manually.',
                 { type: 'success' }
@@ -130,7 +133,7 @@ export function App() {
             console.log({ _accounts });
 
             if (_accounts && _accounts[0]) {
-                const _l2Balance = BigInt(await _web3.eth.getBalance(_accounts[0]));
+                const _l2Balance = await (await _web3.getBalance(_accounts[0])).toBigInt();
                 setBalance(_l2Balance);
             }
         })();

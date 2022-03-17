@@ -5,3 +5,6 @@ build
 .openzeppelin/.session
 src/types
 yarn-error.log
+artifacts
+cache
+typechain-types

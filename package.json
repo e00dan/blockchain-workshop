@@ -14,22 +14,24 @@
         "test": "test"
     },
     "scripts": {
-        "build": "yarn compile && yarn build:types && yarn build:ts",
+        "build": "yarn compile && yarn build:ts",
         "build:ts": "tsc -b tsconfig.build.json --verbose --pretty",
-        "build:types": "typechain --target=\"web3-v1\" --outDir=\"src/types\" \"build/contracts/**/*.json\"",
         "clean": "shx rm -rf dist build",
-        "compile": "truffle compile",
-        "start:ganache": "ganache-cli -m \"chalk park staff buzz chair purchase wise oak receive avoid avoid home\" -l 8000000 -e 1000000 -a 20 -g 0 --chainId 1337",
+        "compile": "hardhat compile",
+        "start:ethereum": "hardhat node",
         "prettier": "prettier --write --config-precedence file-override './src/**/*'",
         "ui": "cross-env NODE_OPTIONS=\"--max_old_space_size=8192\" webpack serve"
     },
     "types": "dist/js/src/index.d.ts",
     "dependencies": {
-        "react-toastify": "^7.0.4",
-        "web3": "1.3.4"
+        "ethers": "^5.6.1",
+        "react-toastify": "^7.0.4"
     },
     "devDependencies": {
-        "@typechain/web3-v1": "^2.2.0",
+        "@nomiclabs/hardhat-ethers": "2.0.5",
+        "@nomiclabs/hardhat-waffle": "2.0.2",
+        "@typechain/ethers-v5": "9.0.0",
+        "@typechain/hardhat": "4.0.0",
         "@types/node": "12.12.27",
         "@types/react": "16.9.21",
         "@types/react-dom": "16.9.5",
@@ -48,7 +50,7 @@
         "ethlint": "1.2.5",
         "extract-text-webpack-plugin": "3.0.2",
         "fork-ts-checker-webpack-plugin": "4.0.4",
-        "ganache-cli": "6.12.2",
+        "hardhat": "^2.9.1",
         "html-webpack-plugin": "5.3.1",
         "https-browserify": "^1.0.0",
         "os-browserify": "^0.3.0",
@@ -60,10 +62,9 @@
         "stream-browserify": "^3.0.0",
         "stream-http": "^3.1.1",
         "style-loader": "1.1.3",
-        "truffle": "5.4.17",
         "ts-loader": "6.2.1",
         "ts-node": "8.6.2",
-        "typechain": "^4.0.3",
+        "typechain": "7.0.1",
         "typescript": "4.2.3",
         "vm-browserify": "^1.1.2",
         "webpack": "5.36.0",
