@@ -20,7 +20,7 @@ export default {
             accounts: [`0x6cd5e7be2f6504aa5ae7c0c04178d8f47b7cfc63b71d95d9e6282f5b090431bf`]
         },
         gw_testnet_v1: {
-            url: `https://godwoken-testnet-web3-v1-rpc.ckbapp.dev`,
+            url: `https://godwoken-testnet-v1.ckbapp.dev`,
             accounts: [PRIVATE_KEY]
         }
     }
