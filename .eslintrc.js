@@ -57,7 +57,8 @@ module.exports = {
         "react/jsx-no-target-blank": "off",
         'max-classes-per-file': 'off',
         '@typescript-eslint/interface-name-prefix': 'off',
-        '@typescript-eslint/camelcase': 'off'
+        '@typescript-eslint/camelcase': 'off',
+        'func-names': 'off'
     },
     "settings": {
         "import/resolver": {
