@@ -25,7 +25,11 @@
     },
     "types": "dist/js/src/index.d.ts",
     "dependencies": {
+        "@ckb-lumos/codec": "0.17.0",
+        "@ckb-lumos/lumos": "0.17.0",
+        "@lay2/pw-core": "0.5.0-alpha.3",
         "ethers": "^5.6.1",
+        "node-fetch": "2.6.7",
         "react-toastify": "^7.0.4"
     },
     "devDependencies": {
@@ -36,6 +40,7 @@
         "@types/chai": "^4.3.1",
         "@types/mocha": "^9.1.1",
         "@types/node": "^17.0.31",
+        "@types/node-fetch": "^2.6.2",
         "@types/react": "16.9.21",
         "@types/react-dom": "16.9.5",
         "@typescript-eslint/eslint-plugin": "2.19.2",

@@ -6,7 +6,11 @@ import './app.css';
 import 'react-toastify/dist/ReactToastify.css';
 
 import { ethers, providers } from 'ethers';
-import { SimpleStorageWrapper } from '../lib/contracts/SimpleStorageWrapper';
+import { Address, AddressType, LockType } from '@lay2/pw-core';
+import { PortalWalletWrapper } from './pwcore';
+import { getNFTsAtAddress } from './nft/api';
+import { EnrichedMNFT, TransactionBuilderExpectedMNFTData } from './nft/nft';
+import { CONFIG } from './nft/config';
 
 async function createWeb3() {
     // Modern dapp browsers...
@@ -33,89 +37,83 @@ async function createWeb3() {
 
 export function App() {
     const [web3, setWeb3] = useState<providers.Web3Provider>(null);
-    const [contract, setContract] = useState<SimpleStorageWrapper>();
     const [accounts, setAccounts] = useState<string[]>();
-    const [balance, setBalance] = useState<bigint>();
-    const [existingContractIdInputValue, setExistingContractIdInputValue] = useState<string>();
-    const [storedValue, setStoredValue] = useState<number | undefined>();
-    const [transactionInProgress, setTransactionInProgress] = useState(false);
-    const toastId = React.useRef(null);
-    const [newStoredNumberInputValue, setNewStoredNumberInputValue] = useState<
-        number | undefined
-    >();
-
-    useEffect(() => {
-        if (transactionInProgress && !toastId.current) {
-            toastId.current = toast.info(
-                'Transaction in progress. Confirm MetaMask signing dialog and please wait...',
-                {
-                    position: 'top-right',
-                    autoClose: false,
-                    hideProgressBar: false,
-                    closeOnClick: false,
-                    pauseOnHover: true,
-                    draggable: true,
-                    progress: undefined,
-                    closeButton: false
-                }
-            );
-        } else if (!transactionInProgress && toastId.current) {
-            toast.dismiss(toastId.current);
-            toastId.current = null;
-        }
-    }, [transactionInProgress, toastId.current]);
+    const [MNFTs, setMNFTs] = useState<EnrichedMNFT[]>();
+    const [selectedItems, setSelectedItems] = useState<string[]>([]);
+    const [receiverAddress, setReceiverAddress] = useState<string>();
+    const [layerOneTransactionHash, setLayerOneTransactionHash] = useState<string>();
+    const [portalWalletWrapper, setPortalWalletWrapper] = useState<PortalWalletWrapper>();
 
     const account = accounts?.[0];
 
-    async function deployContract() {
-        const _contract = new SimpleStorageWrapper(web3.getSigner());
-
+    async function fetchMNFTs() {
+        setSelectedItems([]);
         try {
-            setTransactionInProgress(true);
+            const address = new Address(account, AddressType.eth, undefined, LockType.pw);
+            const _MNFTs = await getNFTsAtAddress(address);
+            const _processedMNFTs: EnrichedMNFT[] = [];
 
-            await _contract.deploy();
+            for (const token of _MNFTs) {
+                await token.getConnectedClass();
+                await token.getConnectedIssuer();
 
-            setExistingContractAddress(_contract.address);
-            toast(
-                'Successfully deployed a smart-contract. You can now proceed to get or set the value in a smart contract.',
-                { type: 'success' }
-            );
+                const classData = token.getClassData();
+                const issuerData = token.getIssuerData();
+
+                _processedMNFTs.push({
+                    tokenId: token.id,
+                    name: `${classData.name} #${token.getTypeScriptArguments().tokenId}`,
+                    renderer: classData.renderer,
+                    issuerName: issuerData.info.name,
+                    token
+                });
+            }
+
+            setMNFTs(_processedMNFTs);
+
+            toast('mNFTs on Layer 1 address fetched', { type: 'success' });
         } catch (error) {
             console.error(error);
-            toast('There was an error sending your transaction. Please check developer console.');
-        } finally {
-            setTransactionInProgress(false);
+            toast('Undefined error.');
         }
     }
 
-    async function getStoredValue() {
-        const value = await contract.getStoredValue();
-        toast('Successfully read latest stored value.', { type: 'success' });
+    async function bridgeSelectedItems() {
+        const _processedMNFTs: TransactionBuilderExpectedMNFTData[] = [];
 
-        setStoredValue(value);
-    }
-
-    async function setExistingContractAddress(contractAddress: string) {
-        const _contract = new SimpleStorageWrapper(web3.getSigner());
-        _contract.useDeployed(contractAddress.trim());
-
-        setContract(_contract);
-        setStoredValue(undefined);
-    }
-
-    async function setNewStoredValue() {
         try {
-            setTransactionInProgress(true);
-            await contract.setStoredValue(newStoredNumberInputValue);
-            toast(
-                'Successfully set latest stored value. You can refresh the read value now manually.',
-                { type: 'success' }
+            for (const { token: nft } of MNFTs) {
+                const classTypeArgs = nft.nftClassCell?.output.type?.args;
+                const nftTypeArgs = nft.typeScriptArguments;
+
+                if (!classTypeArgs) {
+                    throw new Error('classTypeArgs undefined');
+                }
+
+                const unipassExpectedNft: TransactionBuilderExpectedMNFTData = {
+                    classTypeArgs,
+                    nftTypeArgs,
+                    tokenId: nft.getTypeScriptArguments().tokenId.toString(),
+                    outPoint: {
+                        txHash: nft.outpoint.tx_hash,
+                        index: nft.outpoint.index
+                    }
+                };
+
+                _processedMNFTs.push(unipassExpectedNft);
+            }
+
+            const transactionId = await portalWalletWrapper.bridgeMNFTS(
+                CONFIG.LAYER_ONE_BRIDGE_CKB_ADDRESS,
+                _processedMNFTs,
+                receiverAddress
             );
+
+            setLayerOneTransactionHash(transactionId);
+            toast.success(`Successfully sent Layer 1 transaction.`);
         } catch (error) {
             console.error(error);
-            toast('There was an error sending your transaction. Please check developer console.');
-        } finally {
-            setTransactionInProgress(false);
+            toast('Undefined error.');
         }
     }
 
@@ -132,64 +130,88 @@ export function App() {
             setAccounts(_accounts);
             console.log({ _accounts });
 
-            if (_accounts && _accounts[0]) {
-                const _l2Balance = await (await _web3.getBalance(_accounts[0])).toBigInt();
-                setBalance(_l2Balance);
-            }
+            const wrapper = new PortalWalletWrapper();
+            await wrapper.init({});
+
+            setPortalWalletWrapper(wrapper);
         })();
     });
 
-    const LoadingIndicator = () => <span className="rotating-icon">⚙️</span>;
-
     return (
         <div>
-            Your ETH address: <b>{accounts?.[0]}</b>
+            Your ETH address: <b>{account}</b>
             <br />
-            <br />
-            Balance: <b>{balance ? (balance / 10n ** 8n).toString() : <LoadingIndicator />} ETH</b>
-            <br />
-            <br />
-            Deployed contract address: <b>{contract?.address || '-'}</b> <br />
             <br />
             <hr />
-            <p>
-                The button below will deploy a SimpleStorage smart contract where you can store a
-                number value. By default the initial stored value is equal to 123 (you can change
-                that in the Solidity smart contract). After the contract is deployed you can either
-                read stored value from smart contract or set a new one. You can do that using the
-                interface below.
-            </p>
-            <button onClick={deployContract} disabled={!balance}>
-                Deploy contract
+            <button onClick={() => fetchMNFTs()} disabled={!account}>
+                Fetch mNFTs on your PortalWallet account
             </button>
-            &nbsp;or&nbsp;
+            <br />
+            <br />
+            CKB required to bridge mNFTs: {selectedItems.length * 111}
+            <br />
+            <br />
             <input
-                placeholder="Existing contract id"
-                onChange={e => setExistingContractIdInputValue(e.target.value)}
+                placeholder="Receiver Ethereum address on Godwoken"
+                onChange={e => setReceiverAddress(e.target.value)}
+                style={{ minWidth: '400px' }}
             />
+            <br />
+            <br />
             <button
-                disabled={!existingContractIdInputValue || !balance}
-                onClick={() => setExistingContractAddress(existingContractIdInputValue)}
+                onClick={() => bridgeSelectedItems()}
+                disabled={!account || selectedItems.length === 0}
             >
-                Use existing contract
+                Bridge selected mNFTs
             </button>
             <br />
             <br />
-            <button onClick={getStoredValue} disabled={!contract}>
-                Get stored value
-            </button>
-            {storedValue ? <>&nbsp;&nbsp;Stored value: {storedValue.toString()}</> : null}
-            <br />
-            <br />
-            <input
-                type="number"
-                onChange={e => setNewStoredNumberInputValue(parseInt(e.target.value, 10))}
-            />
-            <button onClick={setNewStoredValue} disabled={!contract}>
-                Set new stored value
-            </button>
-            <br />
-            <br />
+            {layerOneTransactionHash && (
+                <span>
+                    Layer 1 transaction hash: <b>{layerOneTransactionHash}</b>
+                </span>
+            )}
+            <hr />
+            {MNFTs && (
+                <table>
+                    <thead>
+                        <tr>
+                            <td>Selected</td>
+                            <td>Image</td>
+                            <td>ID</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {MNFTs.map(mnft => (
+                            <tr key={mnft.tokenId}>
+                                <td>
+                                    <input
+                                        type="checkbox"
+                                        onChange={e => {
+                                            if (e.target.checked) {
+                                                setSelectedItems([
+                                                    ...new Set(selectedItems.concat(mnft.tokenId))
+                                                ]);
+                                            } else {
+                                                setSelectedItems(
+                                                    selectedItems.filter(i => i !== mnft.tokenId)
+                                                );
+                                            }
+                                        }}
+                                    />
+                                </td>
+                                <td>
+                                    <img
+                                        src={mnft.renderer}
+                                        style={{ width: '40px', height: '40px' }}
+                                    />
+                                </td>
+                                <td>{mnft.tokenId}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            )}
             <br />
             <br />
             <hr />
