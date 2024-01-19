@@ -31,32 +31,23 @@ describe('HeadTail', () => {
     describe('Stage 1', () => {
         // it('allows to deposit 1 ETH', async () => {
         //     const account = accounts[0];
-
         //     const startingBalance = (await rpc.getBalance(account)).toBigInt();
-
         //     console.log({
         //         startingBalance
         //     });
-
         //     const oneEther = BigInt(1 * 10 ** 18);
-
         //     await contract.deposit({
         //         value: Number(oneEther)
         //     });
-
         //     const finalBalance = (await rpc.getBalance(account)).toBigInt();
         //     expect(finalBalance).to.be.equal(startingBalance - oneEther);
         // });
-
         // it('saves address of user', async () => {
         //     const account = accounts[0];
-
         //     const oneEther = BigInt(1 * 10 ** 18);
-
         //     await contract.deposit({
         //         value: Number(oneEther)
         //     });
-
         //     expect(await contract.userAddress()).to.be.equal(account);
         // });
     });

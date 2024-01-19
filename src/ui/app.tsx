@@ -1,21 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import { providers } from 'ethers';
-import { deployHeadTailContract } from '../common';
-import { HeadTail } from '../../typechain-types';
+import { CustomTransport, WalletClient, createWalletClient, custom } from 'viem';
+import { hardhat } from 'viem/chains';
+
 import './app.css';
+import { deployHeadTailContract } from '../common';
 
-async function createProvider() {
+async function initializeBrowserWalletClient() {
     // Modern dapp browsers...
-    if ((window as any).ethereum) {
+    if (window.ethereum) {
         try {
-            // A Web3Provider wraps a standard Web3 provider, which is
-            // what MetaMask injects as window.ethereum into each page
-            const provider = new providers.Web3Provider((window as any).ethereum);
+            const [account] = await window.ethereum.request({ method: 'eth_requestAccounts' });
 
-            // MetaMask requires requesting permission to connect users accounts
-            await provider.send('eth_requestAccounts', []);
-
-            return provider;
+            return createWalletClient({
+                account,
+                chain: hardhat,
+                transport: custom(window.ethereum)
+            });
         } catch (error) {
             // User denied account access...
         }
@@ -26,22 +26,28 @@ async function createProvider() {
 }
 
 export function App() {
-    const [provider, setProvider] = useState<providers.Web3Provider>(null);
-    const [contract, setContract] = useState<HeadTail>();
+    const [walletClient, setWalletClient] = useState<WalletClient<
+        CustomTransport,
+        typeof hardhat
+    > | null>(null);
+
+    const [contract, setContract] = useState<Awaited<ReturnType<typeof deployHeadTailContract>>>();
 
     async function deployContract() {
-        const accounts = await provider.listAccounts();
+        if (!walletClient) {
+            return;
+        }
 
-        setContract(await deployHeadTailContract(provider, accounts[0]));
+        setContract(await deployHeadTailContract(walletClient));
     }
 
     useEffect(() => {
-        if (provider) {
+        if (walletClient) {
             return;
         }
 
         (async () => {
-            setProvider(await createProvider());
+            setWalletClient(await initializeBrowserWalletClient());
         })();
     });
 

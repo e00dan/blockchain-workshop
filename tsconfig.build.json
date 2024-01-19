@@ -17,6 +17,7 @@
         "preserveSymlinks": true,
         "rootDir": "./",
         "outDir": "./dist/js",
+        "strict": true
     },
-    "include": ["./src/**/*", "./dist/ts/**/*", "./schemas/*.json", "./build/**/*.json"],
+    "include": ["./src/**/*"]
   }

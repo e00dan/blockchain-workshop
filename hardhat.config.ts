@@ -1,12 +1,7 @@
-import '@typechain/hardhat';
-import '@nomiclabs/hardhat-ethers';
-import '@nomiclabs/hardhat-waffle';
+import '@nomicfoundation/hardhat-viem';
 
 export default {
     solidity: '0.8.9',
-    typechain: {
-        target: 'ethers-v5'
-    },
     networks: {
         hardhat: {
             accounts: {

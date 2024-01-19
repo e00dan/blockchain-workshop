@@ -3,6 +3,6 @@ node_modules
 dist
 build
 .openzeppelin/.session
-typechain-types
 artifacts
 cache
+src/wagmi-generated.ts
